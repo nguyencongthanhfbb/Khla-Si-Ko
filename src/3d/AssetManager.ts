@@ -104,25 +104,26 @@ export class AssetManager {
    */
   public async preloadAll(): Promise<void> {
     const urls = [
-      '/assets/characters/cow/cow.glb',
-      '/assets/characters/tiger/tiger.glb',
-      '/assets/environment/nature/tree_oak.glb',
-      '/assets/environment/nature/tree_default.glb',
-      '/assets/environment/nature/rock_largeA.glb',
-      '/assets/environment/nature/rock_smallA.glb',
-      '/assets/environment/nature/plant_bush.glb',
-      '/assets/environment/nature/flower_redA.glb',
-      '/assets/environment/nature/flower_yellowA.glb',
-      '/assets/environment/nature/grass.glb',
-      '/assets/environment/nature/fence_simple.glb',
-      '/assets/khmer/architecture/khmer_pavilion.glb',
-      '/assets/khmer/architecture/clay_jar_kam.glb',
-      '/assets/khmer/ornaments/lotus_finial.glb',
-      '/assets/khmer/ornaments/naga_ornament.glb',
+      '/assets/game/characters/cow/cow.glb',
+      '/assets/game/characters/tiger/tiger.glb',
+      '/assets/game/environment/tree_oak.glb',
+      '/assets/game/environment/tree_default.glb',
+      '/assets/game/environment/rock_largeA.glb',
+      '/assets/game/environment/rock_smallA.glb',
+      '/assets/game/environment/plant_bush.glb',
+      '/assets/game/environment/flower_redA.glb',
+      '/assets/game/environment/flower_yellowA.glb',
+      '/assets/game/environment/grass.glb',
+      '/assets/game/environment/fence_simple.glb',
+      '/assets/game/khmer/khmer_pavilion.glb',
+      '/assets/game/khmer/clay_jar_kam.glb',
+      '/assets/vendor/quaternius/cow.glb',
+      '/assets/vendor/kenney/mini-forest/tree_oak.glb',
+      '/assets/vendor/kenney/nature/tree.glb',
     ];
 
     await Promise.allSettled(urls.map((u) => this.loadModel(u)));
-    console.log('[AssetManager] Preload finished for all 15 models.');
+    console.log('[AssetManager] Preload finished for game & vendor models.');
   }
 
   /**

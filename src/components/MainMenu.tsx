@@ -431,6 +431,33 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                   />
                 </button>
               </div>
+
+              {/* Developer Engine Mode Toggle */}
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-stone-50 border border-stone-200">
+                <div className="flex items-center gap-2.5">
+                  <Settings className="w-5 h-5 text-purple-600" />
+                  <div>
+                    <div className="font-bold text-sm text-stone-800">Developer Engine</div>
+                    <div className="text-[11px] text-stone-500">Enable test runner &amp; state injector</div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onUpdateSettings({ developerMode: !settings.developerMode });
+                  }}
+                  className={`w-12 h-6.5 rounded-full transition-colors relative flex items-center p-0.5 ${
+                    settings.developerMode ? 'bg-purple-600' : 'bg-stone-300'
+                  }`}
+                >
+                  <div
+                    className={`w-5.5 h-5.5 rounded-full bg-white shadow-md transform transition-transform ${
+                      settings.developerMode ? 'translate-x-5.5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
 
             <button

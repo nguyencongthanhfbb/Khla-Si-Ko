@@ -44,4 +44,5 @@ export interface GameSettings {
   soundEnabled: boolean;
   hapticsEnabled: boolean;
   showCoordinates: boolean;
+  developerMode: boolean;
 }

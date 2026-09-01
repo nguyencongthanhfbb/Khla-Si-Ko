@@ -46,6 +46,7 @@ export default function App() {
     soundEnabled: true,
     hapticsEnabled: true,
     showCoordinates: false,
+    developerMode: false,
   });
 
   const [isAiThinking, setIsAiThinking] = useState(false);
@@ -338,19 +339,21 @@ export default function App() {
             }}
           />
 
-          {/* Developer Debug Panel */}
-          <DebugPanel
-            state={gameState}
-            selectedCell={selectedCell}
-            selectedPieceId={selectedPieceId}
-            legalMoves={activeLegalMoves}
-            showCoordinates={settings.showCoordinates}
-            onToggleCoordinates={handleToggleCoordinates}
-            onInjectState={(newState) => {
-              setGameState(newState);
-              sceneManagerRef.current?.syncWithState(newState);
-            }}
-          />
+          {/* Developer Debug Panel (Only in Developer Mode) */}
+          {settings.developerMode && (
+            <DebugPanel
+              state={gameState}
+              selectedCell={selectedCell}
+              selectedPieceId={selectedPieceId}
+              legalMoves={activeLegalMoves}
+              showCoordinates={settings.showCoordinates}
+              onToggleCoordinates={handleToggleCoordinates}
+              onInjectState={(newState) => {
+                setGameState(newState);
+                sceneManagerRef.current?.syncWithState(newState);
+              }}
+            />
+          )}
 
           {/* Dedicated Pause Menu Overlay */}
           <PauseMenu
