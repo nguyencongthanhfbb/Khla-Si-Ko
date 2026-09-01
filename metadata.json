@@ -1,0 +1,6 @@
+{
+  "name": "Khla Si Ko · ខ្លាស៊ីគោ",
+  "description": "A 3D playable traditional Khmer board game of Tiger & Cow (Khla Si Ko) featuring procedural wooden toys, clean rules engine, and AI opponent.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
