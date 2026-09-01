@@ -9,7 +9,6 @@ import {
   getLegalMovesForPiece,
   getLegalPlacementMoves,
   makeMove,
-  isGameOver,
 } from './game/KhlaSiKoEngine';
 import { getAIMove } from './game/AI';
 import { GameSettings, GameState, Move, Side } from './game/types';
@@ -17,6 +16,7 @@ import { SceneManager } from './3d/SceneManager';
 import { sound } from './audio/SoundEffects';
 import { MainMenu } from './components/MainMenu';
 import { GameHUD } from './components/GameHUD';
+import { PauseMenu } from './components/PauseMenu';
 import { VictoryModal } from './components/VictoryModal';
 import { RulesModal } from './components/RulesModal';
 import { InteractiveTutorial } from './components/InteractiveTutorial';
@@ -27,6 +27,7 @@ export default function App() {
   const [view, setView] = useState<'MENU' | 'GAME'>('MENU');
   const [showTutorial, setShowTutorial] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const [showPause, setShowPause] = useState(false);
 
   // Game Engine State
   const [gameState, setGameState] = useState<GameState>(createInitialState);
@@ -72,7 +73,7 @@ export default function App() {
   // Handle Board / Piece Interaction
   const handleInteraction = useCallback(
     (cellIndex: number, clickedPieceId?: string) => {
-      if (isAnimating || isAiThinking || gameState.winner !== null) return;
+      if (isAnimating || isAiThinking || gameState.winner !== null || showPause) return;
 
       const side = gameState.turn;
       const isAiTurn = settings.gameMode === 'AI' && settings.aiSide === side;
@@ -86,7 +87,6 @@ export default function App() {
         const targetMove = placementMoves.find((m) => m.to === cellIndex);
 
         if (targetMove) {
-          // Execute placement
           sound.playCowPlace();
           executePlayerMove(targetMove);
         } else {
@@ -148,7 +148,7 @@ export default function App() {
         }
       }
     },
-    [gameState, selectedPieceId, selectedCell, activeLegalMoves, isAnimating, isAiThinking, settings]
+    [gameState, selectedPieceId, selectedCell, activeLegalMoves, isAnimating, isAiThinking, settings, showPause]
   );
 
   // Hook interaction callback to 3D Scene
@@ -164,11 +164,9 @@ export default function App() {
       setIsAnimating(true);
       const nextState = makeMove(gameState, move);
 
-      // Save state to history for undo
       setHistory((prev) => [...prev, gameState]);
       setGameState(nextState);
 
-      // Clear selection
       setSelectedPieceId(null);
       setSelectedCell(null);
       setActiveLegalMoves([]);
@@ -200,7 +198,8 @@ export default function App() {
       gameState.winner !== null ||
       gameState.turn !== settings.aiSide ||
       isAnimating ||
-      isAiThinking
+      isAiThinking ||
+      showPause
     ) {
       return;
     }
@@ -226,7 +225,7 @@ export default function App() {
     }, 550);
 
     return () => clearTimeout(timer);
-  }, [gameState, settings, isAnimating, isAiThinking, view]);
+  }, [gameState, settings, isAnimating, isAiThinking, view, showPause]);
 
   // Undo Move
   const handleUndo = () => {
@@ -257,6 +256,7 @@ export default function App() {
     setSelectedPieceId(null);
     setSelectedCell(null);
     setActiveLegalMoves([]);
+    setShowPause(false);
 
     const manager = sceneManagerRef.current;
     if (manager) {
@@ -289,6 +289,12 @@ export default function App() {
     setSettings((s) => ({ ...s, soundEnabled: next }));
   };
 
+  const handleToggleHaptics = () => {
+    const next = !settings.hapticsEnabled;
+    sound.setHaptics(next);
+    setSettings((s) => ({ ...s, hapticsEnabled: next }));
+  };
+
   const handleToggleCoordinates = () => {
     const next = !settings.showCoordinates;
     setSettings((s) => ({ ...s, showCoordinates: next }));
@@ -296,7 +302,7 @@ export default function App() {
   };
 
   return (
-    <main className="relative w-screen h-screen overflow-hidden select-none bg-[#2d1f18]">
+    <main className="relative w-screen h-screen overflow-hidden select-none bg-[#271912]">
       {/* 1. Main Menu Screen */}
       {view === 'MENU' && (
         <MainMenu
@@ -325,6 +331,7 @@ export default function App() {
             onToggleSound={handleToggleSound}
             onResetCamera={() => sceneManagerRef.current?.resetCamera()}
             onOpenRules={() => setShowRules(true)}
+            onOpenPause={() => setShowPause(true)}
             onMainMenu={() => {
               sound.playClick();
               setView('MENU');
@@ -345,7 +352,26 @@ export default function App() {
             }}
           />
 
-          {/* Victory Modal */}
+          {/* Dedicated Pause Menu Overlay */}
+          <PauseMenu
+            isOpen={showPause}
+            onResume={() => setShowPause(false)}
+            onRestart={handleRestart}
+            onOpenRules={() => {
+              setShowPause(false);
+              setShowRules(true);
+            }}
+            onMainMenu={() => {
+              setShowPause(false);
+              setView('MENU');
+            }}
+            isMuted={!settings.soundEnabled}
+            onToggleMute={handleToggleSound}
+            haptics={settings.hapticsEnabled}
+            onToggleHaptics={handleToggleHaptics}
+          />
+
+          {/* Victory Celebration Modal */}
           <VictoryModal
             winner={gameState.winner}
             winReason={gameState.winReason}

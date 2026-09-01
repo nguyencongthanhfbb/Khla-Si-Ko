@@ -33,22 +33,26 @@ export class SceneManager {
   private isInteracting: boolean = false;
   private onInteractCallback?: (cellIndex: number, pieceId?: string) => void;
 
+  private cameraTarget: THREE.Vector3 = new THREE.Vector3(0, 0.2, 0);
+  private defaultCameraPos: THREE.Vector3 = new THREE.Vector3(0, 7.2, 5.6);
+  private cameraShake: number = 0;
+
   constructor(container: HTMLElement) {
     this.container = container;
 
-    // 1. Scene
+    // 1. Scene with warm Cambodian terracotta/wood atmosphere
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x2d1f18); // Warm dark terracotta atmosphere
+    this.scene.background = new THREE.Color(0x271912); // Deep warm amber-brown
 
-    // 2. Camera: 3/4 top-down view (approx 50 degrees)
+    // 2. Camera: 3/4 top-down view (ideal for mobile and desktop)
     const width = container.clientWidth || window.innerWidth;
     const height = container.clientHeight || window.innerHeight;
     const aspect = width / height;
 
-    this.camera = new THREE.PerspectiveCamera(42, aspect, 0.1, 50);
+    this.camera = new THREE.PerspectiveCamera(40, aspect, 0.1, 50);
     this.setCameraPosition(aspect);
 
-    // 3. Renderer with soft shadows
+    // 3. High Performance WebGL Renderer with Soft Shadows
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
       powerPreference: 'high-performance',
@@ -58,12 +62,12 @@ export class SceneManager {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.1;
+    this.renderer.toneMappingExposure = 1.15;
 
     container.innerHTML = '';
     container.appendChild(this.renderer.domElement);
 
-    // 4. Lighting (Warm sun & soft shadows)
+    // 4. Warm Sun & Studio Lighting
     this.setupLighting();
 
     // 5. Scene Objects
@@ -79,7 +83,7 @@ export class SceneManager {
     this.captureEffects = new CaptureEffects3D();
     this.scene.add(this.captureEffects.group);
 
-    // 6. Instantiate 4 Tigers and 12 Cows
+    // 6. Instantiate 4 Tigers and 12 Cows (with varied patch patterns)
     for (let i = 0; i < TOTAL_TIGERS; i++) {
       const id = `tiger-${i}`;
       const tiger = new GamePiece3D(id, 'TIGER');
@@ -89,7 +93,7 @@ export class SceneManager {
 
     for (let i = 0; i < TOTAL_COWS; i++) {
       const id = `cow-${i}`;
-      const cow = new GamePiece3D(id, 'COW');
+      const cow = new GamePiece3D(id, 'COW', i);
       this.pieceMap.set(id, cow);
       this.scene.add(cow.group);
     }
@@ -103,46 +107,47 @@ export class SceneManager {
   }
 
   private setCameraPosition(aspect: number) {
-    if (aspect < 0.8) {
-      // Mobile portrait: Zoom out slightly
-      this.camera.position.set(0, 8.8, 6.4);
-    } else if (aspect < 1.2) {
-      // Mobile landscape / Square
-      this.camera.position.set(0, 7.5, 5.8);
+    if (aspect < 0.75) {
+      // Tall mobile portrait
+      this.defaultCameraPos.set(0, 9.2, 6.6);
+    } else if (aspect < 1.1) {
+      // Tablet / Square
+      this.defaultCameraPos.set(0, 7.8, 5.9);
     } else {
       // Desktop
-      this.camera.position.set(0, 6.8, 5.2);
+      this.defaultCameraPos.set(0, 6.9, 5.2);
     }
-    this.camera.lookAt(0, 0.2, 0);
+    this.camera.position.copy(this.defaultCameraPos);
+    this.camera.lookAt(this.cameraTarget);
   }
 
   private setupLighting() {
     // Warm ambient light
-    const ambientLight = new THREE.AmbientLight(0xfff4e6, 1.2);
+    const ambientLight = new THREE.AmbientLight(0xfff6ea, 1.25);
     this.scene.add(ambientLight);
 
-    // Main directional sunlight
-    const dirLight = new THREE.DirectionalLight(0xfff8ee, 1.6);
-    dirLight.position.set(5, 10, 4);
+    // Main warm sunlight
+    const dirLight = new THREE.DirectionalLight(0xfffaee, 1.65);
+    dirLight.position.set(5.5, 11, 4.5);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 1024;
     dirLight.shadow.mapSize.height = 1024;
     dirLight.shadow.camera.near = 0.5;
     dirLight.shadow.camera.far = 25;
-    dirLight.shadow.camera.left = -4.5;
-    dirLight.shadow.camera.right = 4.5;
-    dirLight.shadow.camera.top = 4.5;
-    dirLight.shadow.camera.bottom = -4.5;
+    dirLight.shadow.camera.left = -4.6;
+    dirLight.shadow.camera.right = 4.6;
+    dirLight.shadow.camera.top = 4.6;
+    dirLight.shadow.camera.bottom = -4.6;
     dirLight.shadow.bias = -0.0005;
     this.scene.add(dirLight);
 
-    // Soft blue sky fill light
-    const fillLight = new THREE.DirectionalLight(0xa0c4ff, 0.45);
+    // Soft sky fill light
+    const fillLight = new THREE.DirectionalLight(0xa5c9ff, 0.42);
     fillLight.position.set(-5, 6, -4);
     this.scene.add(fillLight);
 
-    // Subtle center warm point light for sparkle
-    const pointLight = new THREE.PointLight(0xffd32a, 0.6, 8);
+    // Subtle center warm sparkle point light
+    const pointLight = new THREE.PointLight(0xffd32a, 0.55, 8);
     pointLight.position.set(0, 2.5, 0);
     this.scene.add(pointLight);
   }
@@ -157,7 +162,7 @@ export class SceneManager {
 
       this.raycaster.setFromCamera(this.pointer, this.camera);
 
-      // Check intersections with cells and pieces
+      // Check intersections with cells
       const cellIntersects = this.raycaster.intersectObjects(this.board3D.cellMeshes, false);
 
       if (cellIntersects.length > 0) {
@@ -225,6 +230,8 @@ export class SceneManager {
       if (move.type === 'PLACE') {
         const piece = this.pieceMap.get(move.pieceId);
         if (piece) {
+          const dest = getCellPosition(move.to);
+          this.captureEffects.spawnPlacementSparkle(dest);
           piece.animatePlacement(move.to, onAnimComplete);
         } else if (onAnimComplete) {
           onAnimComplete();
@@ -241,18 +248,19 @@ export class SceneManager {
         const capturedPieceId =
           move.capturedIndex !== undefined ? state.board[move.capturedIndex] : undefined;
 
-        // Find the captured cow if it's already cleared in state board
         let capturedCow: GamePiece3D | undefined;
         if (capturedPieceId) {
           capturedCow = this.pieceMap.get(capturedPieceId);
         } else if (move.capturedIndex !== undefined) {
-          // Search which cow was on that cell
           this.pieceMap.forEach((p) => {
             if (p.type === 'COW' && p.currentCell === move.capturedIndex) {
               capturedCow = p;
             }
           });
         }
+
+        // Camera micro-shake on capture for delightful tactile impact
+        this.cameraShake = 0.12;
 
         if (tiger) {
           tiger.animateCaptureJump(move.to, () => {
@@ -269,7 +277,7 @@ export class SceneManager {
         }
       }
     } else {
-      // Instant synchronization (e.g. init, restart, undo)
+      // Instant synchronization
       const boardOccupants = new Set<string>();
 
       state.board.forEach((pieceId, cellIdx) => {
@@ -308,6 +316,11 @@ export class SceneManager {
     this.pieceMap.forEach((piece) => {
       piece.isVictory = piece.type === winner;
     });
+
+    if (winner) {
+      // Spawn victory confetti bursts in 3D scene
+      this.captureEffects.spawnVictoryCelebration();
+    }
   }
 
   public setDebugCoordinates(show: boolean) {
@@ -326,7 +339,22 @@ export class SceneManager {
       const delta = Math.min(0.1, (time - this.lastTime) / 1000);
       this.lastTime = time;
 
-      // Update pieces animations
+      // Update camera shake
+      if (this.cameraShake > 0) {
+        this.cameraShake -= delta * 0.8;
+        const shakeX = (Math.random() - 0.5) * this.cameraShake * 0.4;
+        const shakeY = (Math.random() - 0.5) * this.cameraShake * 0.4;
+        this.camera.position.set(
+          this.defaultCameraPos.x + shakeX,
+          this.defaultCameraPos.y + shakeY,
+          this.defaultCameraPos.z
+        );
+      } else {
+        this.camera.position.lerp(this.defaultCameraPos, 0.1);
+      }
+      this.camera.lookAt(this.cameraTarget);
+
+      // Update pieces
       this.pieceMap.forEach((piece) => {
         piece.update(delta);
       });

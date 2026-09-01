@@ -5,6 +5,7 @@
 
 import React from 'react';
 import {
+  Pause,
   RotateCcw,
   Volume2,
   VolumeX,
@@ -29,6 +30,7 @@ interface GameHUDProps {
   onToggleSound: () => void;
   onResetCamera: () => void;
   onOpenRules: () => void;
+  onOpenPause: () => void;
   onMainMenu: () => void;
 }
 
@@ -42,20 +44,21 @@ export const GameHUD: React.FC<GameHUDProps> = ({
   onToggleSound,
   onResetCamera,
   onOpenRules,
+  onOpenPause,
   onMainMenu,
 }) => {
   const isTigerTurn = state.turn === 'TIGER';
   const isAiTurn = settings.gameMode === 'AI' && settings.aiSide === state.turn;
 
   return (
-    <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-3 sm:p-5 z-20">
+    <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-3 sm:p-5 z-20 select-none">
       {/* Top Header Row */}
       <div className="flex items-start justify-between gap-2">
         {/* Left: Turn Status Card */}
-        <div className="pointer-events-auto flex items-center gap-3 bg-[#fffbf5]/95 border border-amber-900/15 shadow-xl rounded-2xl p-2.5 sm:px-4 sm:py-3 backdrop-blur-xs">
+        <div className="pointer-events-auto flex items-center gap-2.5 sm:gap-3 bg-[#fffdfa]/95 border-2 border-amber-500/30 shadow-xl rounded-2xl p-2 sm:px-4 sm:py-2.5 backdrop-blur-md">
           {/* Avatar Icon */}
           <div
-            className={`w-11 h-11 sm:w-13 sm:h-13 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl shadow-md transition-all ${
+            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-2xl sm:text-3xl shadow-xs transition-all ${
               isTigerTurn
                 ? 'bg-amber-100 border border-amber-300 ring-2 ring-amber-500/40'
                 : 'bg-emerald-100 border border-emerald-300 ring-2 ring-emerald-500/40'
@@ -66,7 +69,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({
 
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-extrabold uppercase tracking-wider text-amber-800">
+              <span className="text-[11px] font-black uppercase tracking-wider text-amber-900">
                 {isTigerTurn ? 'ខ្លា · Tiger Turn' : 'គោ · Cow Turn'}
               </span>
               {settings.gameMode === 'AI' && (
@@ -77,27 +80,27 @@ export const GameHUD: React.FC<GameHUDProps> = ({
               )}
             </div>
 
-            <div className="text-xs sm:text-sm font-bold text-stone-800 flex items-center gap-2 mt-0.5">
+            <div className="text-xs sm:text-sm font-bold text-stone-700 flex items-center gap-2">
               {state.phase === 'PLACEMENT' ? (
-                <span className="text-emerald-700">
-                  Phase 1 · {state.unplacedCows} Cow{state.unplacedCows === 1 ? '' : 's'} to place
+                <span className="text-emerald-700 font-semibold">
+                  Placement ({state.unplacedCows} left)
                 </span>
               ) : (
-                <span className="text-blue-700">Phase 2 · Free Movement</span>
+                <span className="text-blue-700 font-semibold">Phase 2 · Moving</span>
               )}
             </div>
           </div>
         </div>
 
-        {/* Center/Right Score Pills & Controls */}
+        {/* Center/Right Status & Controls */}
         <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2">
           {/* Captured Cows Badge */}
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-[#fffbf5]/90 border border-amber-900/15 shadow-md rounded-2xl text-xs font-bold text-stone-800 backdrop-blur-xs">
+          <div className="hidden md:flex items-center gap-1.5 px-3 py-2 bg-[#fffdfa]/95 border border-amber-900/15 shadow-md rounded-2xl text-xs font-bold text-stone-800 backdrop-blur-md">
             <span className="text-rose-600">💥 Captured:</span>
             <span className="text-stone-900 font-extrabold">{state.capturedCows} / 12</span>
           </div>
 
-          {/* Undo */}
+          {/* Undo Button */}
           <button
             onClick={() => {
               sound.playClick();
@@ -105,77 +108,38 @@ export const GameHUD: React.FC<GameHUDProps> = ({
             }}
             disabled={!canUndo || isAiThinking}
             title="Undo Move"
-            className={`p-2.5 rounded-2xl border shadow-md backdrop-blur-xs transition-all ${
+            className={`p-2.5 sm:p-3 rounded-2xl border shadow-md backdrop-blur-md transition-all ${
               canUndo && !isAiThinking
-                ? 'bg-[#fffbf5]/95 hover:bg-amber-50 text-stone-700 border-amber-900/15 active:scale-95'
+                ? 'bg-[#fffdfa]/95 hover:bg-amber-50 text-stone-700 border-amber-900/15 active:scale-95'
                 : 'bg-stone-200/50 text-stone-400 border-stone-300/30 cursor-not-allowed opacity-50'
             }`}
           >
             <Undo2 className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
-          {/* Restart */}
-          <button
-            onClick={() => {
-              sound.playClick();
-              onRestart();
-            }}
-            title="Restart Game"
-            className="p-2.5 rounded-2xl bg-[#fffbf5]/95 hover:bg-amber-50 text-stone-700 border border-amber-900/15 shadow-md backdrop-blur-xs transition-all active:scale-95"
-          >
-            <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
-
-          {/* Sound Toggle */}
-          <button
-            onClick={() => {
-              onToggleSound();
-              sound.playClick();
-            }}
-            title={settings.soundEnabled ? 'Mute Audio' : 'Unmute Audio'}
-            className="p-2.5 rounded-2xl bg-[#fffbf5]/95 hover:bg-amber-50 text-stone-700 border border-amber-900/15 shadow-md backdrop-blur-xs transition-all active:scale-95"
-          >
-            {settings.soundEnabled ? (
-              <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-amber-700" />
-            ) : (
-              <VolumeX className="w-4 h-4 sm:w-5 sm:h-5 text-stone-400" />
-            )}
-          </button>
-
-          {/* Reset Camera */}
+          {/* Reset Camera Button */}
           <button
             onClick={() => {
               sound.playClick();
               onResetCamera();
             }}
-            title="Reset Camera Angle"
-            className="p-2.5 rounded-2xl bg-[#fffbf5]/95 hover:bg-amber-50 text-stone-700 border border-amber-900/15 shadow-md backdrop-blur-xs transition-all active:scale-95"
+            title="Reset Camera View"
+            className="p-2.5 sm:p-3 rounded-2xl bg-[#fffdfa]/95 hover:bg-amber-50 text-stone-700 border border-amber-900/15 shadow-md backdrop-blur-md transition-all active:scale-95"
           >
             <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
-          {/* Rules / Help */}
+          {/* Pause Button */}
           <button
             onClick={() => {
               sound.playClick();
-              onOpenRules();
+              onOpenPause();
             }}
-            title="How to Play"
-            className="p-2.5 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white shadow-md transition-all active:scale-95"
+            title="Pause Game"
+            className="p-2.5 sm:px-4 sm:py-3 rounded-2xl bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-amber-950/20 transition-all active:scale-95 flex items-center gap-1.5"
           >
-            <HelpCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
-
-          {/* Main Menu */}
-          <button
-            onClick={() => {
-              sound.playClick();
-              onMainMenu();
-            }}
-            title="Back to Menu"
-            className="p-2.5 rounded-2xl bg-[#fffbf5]/95 hover:bg-amber-50 text-stone-700 border border-amber-900/15 shadow-md backdrop-blur-xs transition-all active:scale-95"
-          >
-            <Home className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Pause className="w-4 h-4 fill-current" />
+            <span className="hidden sm:inline">Pause</span>
           </button>
         </div>
       </div>
@@ -183,13 +147,13 @@ export const GameHUD: React.FC<GameHUDProps> = ({
       {/* Bottom Hint Banner */}
       <div className="flex flex-col items-center gap-2 mb-1">
         {isAiThinking && (
-          <div className="pointer-events-auto px-4 py-2 rounded-full bg-purple-900/90 text-purple-200 border border-purple-400/40 text-xs font-bold shadow-lg backdrop-blur-xs flex items-center gap-2 animate-pulse">
+          <div className="pointer-events-auto px-4 py-2 rounded-full bg-purple-900/90 text-purple-200 border border-purple-400/40 text-xs font-bold shadow-lg backdrop-blur-md flex items-center gap-2 animate-pulse">
             <Bot className="w-4 h-4 text-purple-300" />
-            <span>AI is planning a move...</span>
+            <span>AI is thinking...</span>
           </div>
         )}
 
-        <div className="pointer-events-auto px-4 py-2 rounded-full bg-[#fffbf5]/95 border border-amber-900/15 text-stone-800 text-xs sm:text-sm font-semibold shadow-xl backdrop-blur-xs text-center max-w-md">
+        <div className="pointer-events-auto px-4 py-2 rounded-full bg-[#fffdfa]/95 border border-amber-900/15 text-stone-800 text-xs sm:text-sm font-semibold shadow-xl backdrop-blur-md text-center max-w-md">
           {state.phase === 'PLACEMENT' && state.turn === 'COW' && (
             <span>🐮 Tap any highlighted empty cell to place a Cow</span>
           )}

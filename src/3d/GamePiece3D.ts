@@ -32,7 +32,7 @@ export class GamePiece3D {
 
   public onAnimComplete?: () => void;
 
-  constructor(id: string, type: PieceType) {
+  constructor(id: string, type: PieceType, variationIndex: number = 0) {
     this.id = id;
     this.type = type;
     this.group = new THREE.Group();
@@ -41,7 +41,7 @@ export class GamePiece3D {
       this.tigerModel = new Tiger3D();
       this.group.add(this.tigerModel.group);
     } else {
-      this.cowModel = new Cow3D();
+      this.cowModel = new Cow3D(variationIndex);
       this.group.add(this.cowModel.group);
     }
 
@@ -58,6 +58,8 @@ export class GamePiece3D {
       this.group.visible = true;
       this.isVisible = true;
       this.group.scale.set(1, 1, 1);
+      this.tigerModel?.setExpression('idle');
+      this.cowModel?.setExpression('idle');
     } else {
       this.group.visible = false;
       this.isVisible = false;
@@ -71,16 +73,19 @@ export class GamePiece3D {
     const dest = getCellPosition(toCell);
     this.targetPos.copy(dest);
 
-    // Start slightly outside & above the board
-    this.startPos.set(dest.x * 1.5, BOARD_BASE_Y + 2.5, dest.z * 1.5);
+    // Start off-board at the wooden reserve tray
+    const offX = dest.x >= 0 ? 3.8 : -3.8;
+    const offZ = dest.z >= 0 ? 3.2 : -3.2;
+    this.startPos.set(offX, BOARD_BASE_Y + 1.8, offZ);
     this.group.position.copy(this.startPos);
 
     this.animState = 'PLACING';
     this.animProgress = 0;
-    this.animDuration = 0.42;
+    this.animDuration = 0.38;
     this.group.visible = true;
     this.isVisible = true;
     this.group.scale.set(0.6, 0.6, 0.6);
+    this.cowModel?.setExpression('placed');
     this.onAnimComplete = onComplete;
   }
 
@@ -91,7 +96,9 @@ export class GamePiece3D {
 
     this.animState = 'MOVING';
     this.animProgress = 0;
-    this.animDuration = 0.32;
+    this.animDuration = 0.28; // Responsive and brisk (target 0.25-0.35s)
+    this.tigerModel?.setExpression('moving');
+    this.cowModel?.setExpression('moving' as any);
     this.onAnimComplete = onComplete;
   }
 
@@ -102,15 +109,17 @@ export class GamePiece3D {
 
     this.animState = 'CAPTURING';
     this.animProgress = 0;
-    this.animDuration = 0.55;
+    this.animDuration = 0.48;
+    this.tigerModel?.setExpression('capturing');
     this.onAnimComplete = onComplete;
   }
 
   public animateCapturedDie(onComplete?: () => void) {
     this.animState = 'CAPTURED_DYING';
     this.animProgress = 0;
-    this.animDuration = 0.45;
+    this.animDuration = 0.42;
     this.startPos.copy(this.group.position);
+    this.cowModel?.setExpression('surprised');
     this.onAnimComplete = onComplete;
   }
 
@@ -123,77 +132,92 @@ export class GamePiece3D {
 
       if (this.animState === 'PLACING') {
         // Drop in with landing bounce
-        // Cubic ease out
         const ease = 1 - Math.pow(1 - t, 3);
         this.group.position.lerpVectors(this.startPos, this.targetPos, ease);
-        // Arch height
-        const jumpY = Math.sin(t * Math.PI) * 0.8;
-        this.group.position.y = this.targetPos.y + (1 - ease) * 2.5 + jumpY;
+        // Parabolic arc
+        const hopY = Math.sin(t * Math.PI) * 0.9;
+        this.group.position.y = this.targetPos.y + (1 - ease) * 1.8 + hopY;
 
-        const scale = 0.6 + ease * 0.4;
-        // Landing squash on final 20%
-        if (t > 0.8) {
-          const squash = Math.sin((t - 0.8) * 5 * Math.PI) * 0.18;
-          this.group.scale.set(1 + squash, 1 - squash, 1 + squash);
+        // Squash & stretch on landing
+        if (t > 0.75) {
+          const bounce = Math.sin((t - 0.75) * 4 * Math.PI) * 0.16;
+          this.group.scale.set(1 + bounce, 1 - bounce, 1 + bounce);
         } else {
-          this.group.scale.set(scale, scale, scale);
+          const s = 0.6 + ease * 0.4;
+          this.group.scale.set(s, s, s);
         }
       } else if (this.animState === 'MOVING') {
-        // Normal hop move
-        const ease = 0.5 - Math.cos(t * Math.PI) * 0.5; // Smooth step
+        // Smooth hop move
+        const ease = 0.5 - Math.cos(t * Math.PI) * 0.5;
         this.group.position.x = THREE.MathUtils.lerp(this.startPos.x, this.targetPos.x, ease);
         this.group.position.z = THREE.MathUtils.lerp(this.startPos.z, this.targetPos.z, ease);
 
-        // Parabolic jump arc
-        const hopY = Math.sin(t * Math.PI) * 0.45;
+        // Parabolic hop
+        const hopY = Math.sin(t * Math.PI) * 0.55;
         this.group.position.y = this.targetPos.y + hopY;
 
         // Squash & stretch
-        const stretch = Math.sin(t * Math.PI) * 0.15;
-        this.group.scale.set(1 - stretch, 1 + stretch * 1.5, 1 - stretch);
+        const stretch = Math.sin(t * Math.PI) * 0.18;
+        this.group.scale.set(1 - stretch * 0.8, 1 + stretch * 1.4, 1 - stretch * 0.8);
       } else if (this.animState === 'CAPTURING') {
-        // High acrobatic capture jump over middle piece
+        // High acrobatic capture jump over the middle cow
         const ease = t * t * (3 - 2 * t);
         this.group.position.x = THREE.MathUtils.lerp(this.startPos.x, this.targetPos.x, ease);
         this.group.position.z = THREE.MathUtils.lerp(this.startPos.z, this.targetPos.z, ease);
 
-        // High arc
-        const jumpY = Math.sin(t * Math.PI) * 1.1;
-        this.group.position.y = this.targetPos.y + jumpY;
+        // High apex jump (1.4 units high)
+        const hopY = Math.sin(t * Math.PI) * 1.35;
+        this.group.position.y = this.targetPos.y + hopY;
 
-        // Rotation flair during apex
-        this.group.rotation.x = Math.sin(t * Math.PI) * 0.3;
+        // Acrobatic pitch tilt
+        this.group.rotation.x = Math.sin(t * Math.PI * 2) * 0.3;
+
+        // Stretch at apex, squash on landing
+        if (t > 0.8) {
+          const squash = Math.sin((t - 0.8) * 5 * Math.PI) * 0.22;
+          this.group.scale.set(1 + squash, 1 - squash * 1.2, 1 + squash);
+        } else {
+          const stretch = Math.sin(t * Math.PI) * 0.2;
+          this.group.scale.set(1 - stretch, 1 + stretch, 1 - stretch);
+        }
       } else if (this.animState === 'CAPTURED_DYING') {
-        // Surprised pop up, spin, and shrink
-        this.group.position.y = this.startPos.y + Math.sin(t * Math.PI) * 0.8;
-        this.group.rotation.y += delta * 12;
-        const shrink = Math.max(0.001, 1 - t);
-        this.group.scale.set(shrink, shrink, shrink);
+        // Comical cartoon surprise pop & cheerful fade/run off
+        const spin = t * Math.PI * 2;
+        this.group.rotation.y = spin;
+
+        // Pop up and shrink
+        const popY = Math.sin(t * Math.PI) * 0.8;
+        this.group.position.y = this.startPos.y + popY;
+
+        const scale = Math.max(0.001, 1 - Math.pow(t, 2));
+        this.group.scale.set(scale, scale, scale);
       }
 
       if (t >= 1) {
-        if (this.animState === 'CAPTURED_DYING') {
-          this.isVisible = false;
+        this.animState = 'IDLE';
+        this.group.position.copy(this.targetPos);
+        this.group.rotation.set(0, 0, 0);
+
+        if (this.animState as any === 'CAPTURED_DYING' || this.group.scale.x < 0.1) {
           this.group.visible = false;
+          this.isVisible = false;
         } else {
-          this.group.position.copy(this.targetPos);
           this.group.scale.set(1, 1, 1);
-          this.group.rotation.set(0, 0, 0);
         }
 
-        const cb = this.onAnimComplete;
-        this.animState = 'IDLE';
-        this.onAnimComplete = undefined;
-        if (cb) cb();
+        this.tigerModel?.setExpression('idle');
+        this.cowModel?.setExpression('idle');
+
+        if (this.onAnimComplete) {
+          const cb = this.onAnimComplete;
+          this.onAnimComplete = undefined;
+          cb();
+        }
       }
     }
 
-    // Update child model idle/victory animations
-    if (this.tigerModel) {
-      this.tigerModel.update(delta, this.isSelected, this.isVictory);
-    }
-    if (this.cowModel) {
-      this.cowModel.update(delta, this.isSelected, this.isVictory);
-    }
+    // Pass delta to models for idle/expression updates
+    this.tigerModel?.update(delta, this.isSelected, this.isVictory);
+    this.cowModel?.update(delta, this.isSelected, this.isVictory);
   }
 }
