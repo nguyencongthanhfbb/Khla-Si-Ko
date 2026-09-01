@@ -1,0 +1,13 @@
+{
+  "generator": "KhlaSiKo-AudioEngine",
+  "sounds": [
+    { "name": "click", "type": "synthesis", "preset": "wooden_tap", "duration": 0.07 },
+    { "name": "cow_place", "type": "synthesis", "preset": "harmonic_bell_pop", "duration": 0.26 },
+    { "name": "tiger_move", "type": "synthesis", "preset": "sine_hop", "duration": 0.26 },
+    { "name": "cow_move", "type": "synthesis", "preset": "wooden_slide", "duration": 0.21 },
+    { "name": "capture", "type": "synthesis", "preset": "cartoon_star_pop", "duration": 0.46 },
+    { "name": "victory", "type": "synthesis", "preset": "khmer_fanfare_pentatonic", "duration": 0.85 }
+  ],
+  "license": "CC0-1.0-Universal",
+  "commercialUsePermitted": true
+}

@@ -1,0 +1,24 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Khmer-Traditional-Decor-Kit"
+  },
+  "scenes": [{ "nodes": [0, 1, 2, 3] }],
+  "nodes": [
+    { "name": "KhmerPavilionRoof", "scale": [1, 1, 1] },
+    { "name": "KhmerClayWaterJarKam", "scale": [0.8, 0.8, 0.8] },
+    { "name": "KhmerCornerLotusOrnament", "scale": [0.4, 0.4, 0.4] },
+    { "name": "KhmerNagaFinial", "scale": [0.35, 0.35, 0.35] }
+  ],
+  "materials": [
+    { "name": "TerracottaTile", "pbrMetallicRoughness": { "baseColorFactor": [0.73, 0.29, 0.16, 1.0], "roughnessFactor": 0.65 } },
+    { "name": "CarvedTeakWood", "pbrMetallicRoughness": { "baseColorFactor": [0.29, 0.17, 0.11, 1.0], "roughnessFactor": 0.7 } },
+    { "name": "AntiqueGoldCrest", "pbrMetallicRoughness": { "baseColorFactor": [0.83, 0.69, 0.22, 1.0], "roughnessFactor": 0.3, "metallicFactor": 0.6 } }
+  ],
+  "extras": {
+    "culture": "Khmer / Cambodia",
+    "motifs": ["Sala Chan Pavilion Gable", "K'am Earthenware Jar", "Lotus Bud Carving", "Naga Finial Horn"],
+    "license": "CC0-1.0-Universal",
+    "commercialUsePermitted": true
+  }
+}

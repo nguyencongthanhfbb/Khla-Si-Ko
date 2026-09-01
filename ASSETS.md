@@ -1,66 +1,69 @@
-# Asset Documentation (Khla Si Ko v0.2)
+# Asset Documentation (Khla Si Ko v0.3)
 
-This document catalogs all assets, visual designs, procedural geometry, sound architectures, and cultural motifs utilized in **Khla Si Ko (ខ្លាស៊ីគោ — Khmer Tiger & Cow Game)** in full accordance with commercial and open source licensing guidelines.
-
----
-
-### 1. 3D Procedural Hero Characters (Tiger & Cow)
-- **Asset**: Chibi Wooden Toy Tiger (`Tiger3D`) & Chibi Wooden Toy Cow (`Cow3D`)
-- **Source**: Procedural parametric 3D geometry engine using Three.js
-- **URL**: Built-in procedural synthesis (`src/3d/Tiger3D.ts`, `src/3d/Cow3D.ts`)
-- **Creator**: Project Development Team
-- **License**: Apache-2.0 / CC0
-- **How used**: Primary interactive 3D board game pieces rendered on a 4x4 handcrafted wooden grid.
-- **Modification**: Custom rounded chibi proportions, double-highlight specular blinking eyes, articulated tail curves, ear wiggle state animations, and Khmer lotus crest forehead engraving (eliminating any non-Khmer cultural symbols).
+This document catalogs all 15 physically generated and imported binary 3D GLB assets, vector badges, audio manifests, and cultural motifs utilized in **Khla Si Ko (ខ្លាស៊ីគោ — Khmer Tiger & Cow Game)** in full accordance with commercial and open-source licensing guidelines.
 
 ---
 
-### 2. Khmer Cultural Decorative Layer
-- **Asset**: `KhmerBoardBorder3D`, `KhmerCornerOrnament3D`, `KhmerRoofMiniature3D`, `KhmerGardenProps3D`
-- **Source**: Custom procedural architectural & ornamental models inspired by traditional Cambodian crafts
-- **URL**: Built-in procedural synthesis (`src/3d/KhmerDecor3D.ts`)
-- **Creator**: Project Development Team
-- **License**: Apache-2.0 / CC0
-- **How used**:
-  - **Border & Corners**: Beveled teak wood frame with rhythmic geometric Kbach relief and antique gold lotus finials.
-  - **Miniature Roofs**: Traditional Cambodian wooden pavilion / Sala Chan silhouette with curved terracotta gables on wooden stilts.
-  - **Garden Props**: Traditional Cambodian clay water jars (*K'am* / earthenware pots on carved wooden stands), bamboo fences, and stone lotus pads.
-- **Modification**: Designed strictly following Khmer visual identity, avoiding generic or mixed cultural forms.
+### 1. Characters (`public/assets/characters/`)
+- **Cow Character Model**:
+  - **File**: `public/assets/characters/cow/cow.glb`
+  - **Vector Badge**: `public/assets/characters/cow/cow_badge.svg`
+  - **Source**: Quaternius LowPoly Animals (Adapted & Tailored)
+  - **Creator**: Quaternius & Khla Si Ko Development Team
+  - **License**: CC0 1.0 Universal (Public Domain)
+  - **Description**: Chibi toy cow with porcelain-wood finish, alternating cocoa patch patterns, rounded golden wood horns, baby-pink snout, and red collar with brass bell.
+  - **Runtime integration**: Loaded via `src/3d/AssetManager.ts` & `src/3d/Cow3D.ts`.
+
+- **Tiger Hero Character Model**:
+  - **File**: `public/assets/characters/tiger/tiger.glb`
+  - **Vector Badge**: `public/assets/characters/tiger/tiger_badge.svg`
+  - **Source**: Khla Si Ko Hero Character Pipeline
+  - **Creator**: Khla Si Ko Development Team
+  - **License**: CC0 1.0 Universal (Public Domain)
+  - **Description**: Chibi toy tiger with vibrant golden orange coat, cream cheeks, specular blinking eyes, articulated striped tail, and Khmer lotus crest forehead engraving.
+  - **Runtime integration**: Loaded via `src/3d/AssetManager.ts` & `src/3d/Tiger3D.ts`.
 
 ---
 
-### 3. Environment & Nature Diorama Props
-- **Asset**: Stylized Low-Poly Miniature Village Trees, Bamboo Mat, Lotus Water Pads, River Pebbles
-- **Source**: Low-poly nature kit geometry reference (inspired by Kenney.nl CC0 Nature Kit and Poly Haven natural palettes)
-- **URL**: https://kenney.nl/ (CC0 Public Domain)
-- **Creator**: Kenney / Procedural implementation
+### 2. Environment & Nature Props (`public/assets/environment/nature/`)
+- **Source**: Kenney Nature Kit (CC0 1.0 Universal)
 - **License**: CC0 1.0 Universal (Public Domain)
-- **How used**: Surrounding 3D village garden diorama setting framed on a dark rosewood tabletop.
-- **Modification**: Adapted to a soft toy finish with warm matte materials.
+- **Files**:
+  1. `public/assets/environment/nature/tree_oak.glb` — Stylized Oak tree with warm wooden trunk and layered foliage.
+  2. `public/assets/environment/nature/tree_default.glb` — Village pine/conifer tree.
+  3. `public/assets/environment/nature/rock_largeA.glb` — Smooth river boulder.
+  4. `public/assets/environment/nature/rock_smallA.glb` — Garden pebble rock.
+  5. `public/assets/environment/nature/plant_bush.glb` — Rounded diorama garden shrub.
+  6. `public/assets/environment/nature/flower_redA.glb` — Stylized red diorama flower blossom.
+  7. `public/assets/environment/nature/flower_yellowA.glb` — Stylized golden diorama flower blossom.
+  8. `public/assets/environment/nature/grass.glb` — Clustered diorama grass blades.
+  9. `public/assets/environment/nature/fence_simple.glb` — Rustic wooden village fence post and rail.
+- **Runtime integration**: Loaded via `src/3d/AssetManager.ts` & `src/3d/DioramaEnvironment.ts`.
 
 ---
 
-### 4. Audio Architecture & Sound Effects
-- **Asset**: Web Audio API Procedural Synthesizer (`SoundEffects.ts`)
-- **Source**: Real-time sine/triangle harmonic synthesizer with gentle toy frequencies
-- **URL**: `src/audio/SoundEffects.ts`
-- **Creator**: Project Development Team
-- **License**: Apache-2.0 / CC0
-- **How used**: Piece placement pops, wooden hop thuds, friendly capture chimes, victory flourishes, and button feedback.
-- **Modification**: Tuned with low harmonic distortion for a warm, soothing wooden toy feel.
+### 3. Khmer Cultural Props (`public/assets/khmer/`)
+- **Source**: Traditional Cambodian Architectural & Ornamental Arts
+- **Creator**: Khla Si Ko Development Team
+- **License**: CC0 1.0 Universal (Public Domain)
+- **Files**:
+  1. `public/assets/khmer/architecture/khmer_pavilion.glb` — Miniature Cambodian Sala Chan pavilion with terracotta curved gable roofs and wooden columns.
+  2. `public/assets/khmer/architecture/clay_jar_kam.glb` — Traditional Cambodian terracotta water storage pot (*K'am*) on a carved wooden base.
+  3. `public/assets/khmer/ornaments/lotus_finial.glb` — Khmer lotus bud finial carving for board corners and roofs.
+  4. `public/assets/khmer/ornaments/naga_ornament.glb` — Stylized serpentine Naga corner crest motif.
+- **Runtime integration**: Loaded via `src/3d/AssetManager.ts`, `src/3d/DioramaEnvironment.ts`, and `src/3d/KhmerDecor3D.ts`.
+
+---
+
+### 4. Audio Architecture (`public/assets/audio/`)
+- **Manifest**: `public/assets/audio/audio_manifest.json`
+- **Engine**: `src/audio/SoundEffects.ts`
+- **Source**: Real-time harmonic synthesizer with gentle toy frequencies.
+- **License**: CC0 1.0 Universal (Public Domain)
+- **Features**: Wooden clicks, cow placement bell pops, tiger jump whooshes, cartoon capture bursts, and pentatonic victory fanfares.
 
 ---
 
 ### 5. UI Icons & Typography
-- **Asset**: Lucide React Icons
-- **Source**: Lucide Project
-- **URL**: https://lucide.dev/
-- **Creator**: Lucide Contributors
-- **License**: ISC License (Permissive commercial use)
-- **How used**: Navigation controls, pause menu, tutorial arrows, audio/haptic toggles.
-- **Asset**: Khmer Unicode Font Family (`Kantumruy Pro` / System Khmer)
-- **Source**: Google Fonts
-- **URL**: https://fonts.google.com/specimen/Kantumruy+Pro
-- **Creator**: Tegusu Inc / Google Fonts
-- **License**: SIL Open Font License 1.1
-- **How used**: High-legibility Khmer script rendering (`ខ្លាស៊ីគោ`) throughout home, HUD, and tutorial interfaces.
+- **Icons**: Lucide React Icons (`lucide-react`) under ISC License.
+- **Typography**: Kantumruy Pro (Khmer script) & Plus Jakarta Sans via Google Fonts (SIL Open Font License 1.1).

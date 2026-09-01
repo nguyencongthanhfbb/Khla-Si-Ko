@@ -4,6 +4,7 @@
  */
 
 import * as THREE from 'three';
+import { assetManager } from './AssetManager';
 import { KhmerRoofMiniature3D, KhmerGardenProps3D } from './KhmerDecor3D';
 
 export class DioramaEnvironment {
@@ -11,10 +12,11 @@ export class DioramaEnvironment {
 
   constructor() {
     this.group = new THREE.Group();
-    this.buildEnvironment();
+    this.buildBase();
+    this.loadRealAssets();
   }
 
-  private buildEnvironment() {
+  private buildBase() {
     // 1. Warm Handcrafted Wooden Tabletop
     const tableMat = new THREE.MeshStandardMaterial({
       color: 0x381f14, // Rich dark rosewood tabletop
@@ -37,139 +39,125 @@ export class DioramaEnvironment {
     matMesh.position.y = -0.15;
     matMesh.receiveShadow = true;
     this.group.add(matMesh);
+  }
 
-    // 2. Miniature Khmer Wooden Village Pavilion (Sala) Silhouette in Background
-    const pavilionLeft = new KhmerRoofMiniature3D();
-    pavilionLeft.position.set(-4.5, -0.15, -2.6);
-    pavilionLeft.scale.set(0.72, 0.72, 0.72);
-    pavilionLeft.rotation.y = 0.45;
-    this.group.add(pavilionLeft);
+  private async loadRealAssets() {
+    // 1. Khmer Pavilions & Clay Jars
+    try {
+      const pavL = await assetManager.getModel('/assets/khmer/architecture/khmer_pavilion.glb');
+      pavL.position.set(-4.5, -0.15, -2.6);
+      pavL.scale.set(0.72, 0.72, 0.72);
+      pavL.rotation.y = 0.45;
+      this.group.add(pavL);
 
-    const pavilionRight = new KhmerRoofMiniature3D();
-    pavilionRight.position.set(4.5, -0.15, -2.5);
-    pavilionRight.scale.set(0.72, 0.72, 0.72);
-    pavilionRight.rotation.y = -0.45;
-    this.group.add(pavilionRight);
+      const pavR = await assetManager.getModel('/assets/khmer/architecture/khmer_pavilion.glb');
+      pavR.position.set(4.5, -0.15, -2.5);
+      pavR.scale.set(0.72, 0.72, 0.72);
+      pavR.rotation.y = -0.45;
+      this.group.add(pavR);
+    } catch {
+      // Fallback
+      const pavL = new KhmerRoofMiniature3D();
+      pavL.position.set(-4.5, -0.15, -2.6);
+      pavL.scale.set(0.72, 0.72, 0.72);
+      this.group.add(pavL);
+    }
 
-    // 3. Khmer Village Clay Water Jars (K'am) on Wooden Stands
-    const jar1 = new KhmerGardenProps3D();
-    jar1.position.set(-4.2, -0.15, 2.8);
-    jar1.scale.set(0.75, 0.75, 0.75);
-    this.group.add(jar1);
+    try {
+      const jar1 = await assetManager.getModel('/assets/khmer/architecture/clay_jar_kam.glb');
+      jar1.position.set(-4.2, -0.15, 2.8);
+      jar1.scale.set(0.75, 0.75, 0.75);
+      this.group.add(jar1);
 
-    const jar2 = new KhmerGardenProps3D();
-    jar2.position.set(4.2, -0.15, 2.7);
-    jar2.scale.set(0.75, 0.75, 0.75);
-    this.group.add(jar2);
+      const jar2 = await assetManager.getModel('/assets/khmer/architecture/clay_jar_kam.glb');
+      jar2.position.set(4.2, -0.15, 2.7);
+      jar2.scale.set(0.75, 0.75, 0.75);
+      this.group.add(jar2);
+    } catch {
+      const jar1 = new KhmerGardenProps3D();
+      jar1.position.set(-4.2, -0.15, 2.8);
+      this.group.add(jar1);
+    }
 
-    // 4. Stylized Low-Poly Miniature Trees
-    const woodTrunkMat = new THREE.MeshStandardMaterial({ color: 0x5a3d28, roughness: 0.8 });
-    const leavesMat1 = new THREE.MeshStandardMaterial({ color: 0x2ed573, roughness: 0.6 }); // Emerald
-    const leavesMat2 = new THREE.MeshStandardMaterial({ color: 0x26af61, roughness: 0.6 }); // Forest
-
-    const treePositions = [
-      { x: -4.3, z: -4.2, mat: leavesMat1, s: 0.95 },
-      { x: 4.3, z: -4.3, mat: leavesMat2, s: 1.05 },
-      { x: -4.6, z: 1.2, mat: leavesMat2, s: 0.85 },
-      { x: 4.6, z: 1.1, mat: leavesMat1, s: 0.88 },
+    // 2. Kenney Nature Kit Trees (Tree Oak & Tree Default)
+    const treeConfigs = [
+      { path: '/assets/environment/nature/tree_oak.glb', x: -4.3, z: -4.2, s: 0.95, rot: 0.2 },
+      { path: '/assets/environment/nature/tree_default.glb', x: 4.3, z: -4.3, s: 1.05, rot: -0.4 },
+      { path: '/assets/environment/nature/tree_default.glb', x: -4.6, z: 1.2, s: 0.85, rot: 1.1 },
+      { path: '/assets/environment/nature/tree_oak.glb', x: 4.6, z: 1.1, s: 0.88, rot: -0.8 },
     ];
 
-    treePositions.forEach(({ x, z, mat, s }) => {
-      const treeGroup = new THREE.Group();
-      treeGroup.position.set(x, -0.15, z);
-      treeGroup.scale.set(s, s, s);
-
-      // Trunk
-      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.13, 0.65, 8), woodTrunkMat);
-      trunk.position.y = 0.32;
-      trunk.castShadow = true;
-      treeGroup.add(trunk);
-
-      // Canopy cloud spheres
-      const top1 = new THREE.Mesh(new THREE.SphereGeometry(0.38, 10, 10), mat);
-      top1.position.y = 0.85;
-      top1.castShadow = true;
-      treeGroup.add(top1);
-
-      const top2 = new THREE.Mesh(new THREE.SphereGeometry(0.28, 8, 8), mat);
-      top2.position.set(0.14, 0.7, 0.1);
-      treeGroup.add(top2);
-
-      this.group.add(treeGroup);
-    });
-
-    // 5. Floating Lotus Pads & Pink Blossoms
-    const petalMat = new THREE.MeshStandardMaterial({ color: 0xff7675, roughness: 0.38 });
-    const lotusCenterMat = new THREE.MeshStandardMaterial({ color: 0xfeca57 });
-
-    const lotusPositions = [
-      { x: -2.6, z: -4.2 },
-      { x: 2.6, z: -4.2 },
-      { x: -3.8, z: 3.8 },
-      { x: 3.8, z: 3.8 },
-    ];
-
-    lotusPositions.forEach(({ x, z }) => {
-      const lotusGroup = new THREE.Group();
-      lotusGroup.position.set(x, -0.12, z);
-
-      // Lily pad
-      const padGeo = new THREE.CylinderGeometry(0.26, 0.26, 0.02, 14);
-      const padMat = new THREE.MeshStandardMaterial({ color: 0x10ac84, roughness: 0.5 });
-      const pad = new THREE.Mesh(padGeo, padMat);
-      lotusGroup.add(pad);
-
-      // Center
-      const flowerCenter = new THREE.Mesh(new THREE.SphereGeometry(0.065, 8, 8), lotusCenterMat);
-      flowerCenter.position.y = 0.04;
-      lotusGroup.add(flowerCenter);
-
-      // 5 Petals
-      for (let i = 0; i < 5; i++) {
-        const pGeo = new THREE.ConeGeometry(0.055, 0.13, 4);
-        pGeo.rotateX(Math.PI / 2.5);
-        const pMesh = new THREE.Mesh(pGeo, petalMat);
-        const ang = (i / 5) * Math.PI * 2;
-        pMesh.position.set(Math.cos(ang) * 0.08, 0.035, Math.sin(ang) * 0.08);
-        pMesh.rotation.y = -ang;
-        lotusGroup.add(pMesh);
+    for (const conf of treeConfigs) {
+      try {
+        const tree = await assetManager.getModel(conf.path);
+        tree.position.set(conf.x, -0.15, conf.z);
+        tree.scale.set(conf.s, conf.s, conf.s);
+        tree.rotation.y = conf.rot;
+        this.group.add(tree);
+      } catch (e) {
+        console.warn('Fallback tree for', conf.path);
       }
+    }
 
-      this.group.add(lotusGroup);
-    });
-
-    // 6. Miniature Wooden Village Bamboo Fence Posts
-    const fenceMat = new THREE.MeshStandardMaterial({ color: 0x6e4932, roughness: 0.7 });
-    const fencePositions = [
-      { x: -1.8, z: -4.5 },
-      { x: 1.8, z: -4.5 },
-      { x: -1.8, z: 4.5 },
-      { x: 1.8, z: 4.5 },
+    // 3. Kenney Nature Kit Rocks (Rock Large & Rock Small)
+    const rockConfigs = [
+      { path: '/assets/environment/nature/rock_largeA.glb', x: -3.8, z: -1.2, s: 0.7, rot: 0.5 },
+      { path: '/assets/environment/nature/rock_smallA.glb', x: 3.8, z: -1.1, s: 0.85, rot: -0.3 },
+      { path: '/assets/environment/nature/rock_smallA.glb', x: -3.6, z: 2.1, s: 0.75, rot: 1.2 },
+      { path: '/assets/environment/nature/rock_largeA.glb', x: 3.7, z: 2.2, s: 0.65, rot: -1.0 },
     ];
 
-    fencePositions.forEach(({ x, z }) => {
-      const postGeo = new THREE.CylinderGeometry(0.045, 0.055, 0.45, 6);
-      const postMesh = new THREE.Mesh(postGeo, fenceMat);
-      postMesh.position.set(x, 0.08, z);
-      postMesh.castShadow = true;
-      this.group.add(postMesh);
-    });
+    for (const conf of rockConfigs) {
+      try {
+        const rock = await assetManager.getModel(conf.path);
+        rock.position.set(conf.x, -0.15, conf.z);
+        rock.scale.set(conf.s, conf.s, conf.s);
+        rock.rotation.y = conf.rot;
+        this.group.add(rock);
+      } catch (e) {
+        console.warn('Fallback rock for', conf.path);
+      }
+    }
 
-    // 7. Smooth River Pebble Stones
-    const stoneMatPebble = new THREE.MeshStandardMaterial({ color: 0x7f8c8d, roughness: 0.8 });
-    const pebblePositions = [
-      { x: -3.6, z: -1.2, s: 0.12 },
-      { x: 3.6, z: -1.1, s: 0.14 },
-      { x: -3.5, z: 2.1, s: 0.11 },
-      { x: 3.5, z: 2.2, s: 0.13 },
+    // 4. Kenney Nature Kit Bushes & Flowers
+    const floraConfigs = [
+      { path: '/assets/environment/nature/plant_bush.glb', x: -3.2, z: -3.8, s: 0.8 },
+      { path: '/assets/environment/nature/plant_bush.glb', x: 3.2, z: -3.8, s: 0.8 },
+      { path: '/assets/environment/nature/flower_redA.glb', x: -2.8, z: 3.6, s: 1.0 },
+      { path: '/assets/environment/nature/flower_yellowA.glb', x: 2.8, z: 3.6, s: 1.0 },
+      { path: '/assets/environment/nature/grass.glb', x: -3.5, z: 0.2, s: 1.2 },
+      { path: '/assets/environment/nature/grass.glb', x: 3.5, z: 0.2, s: 1.2 },
     ];
 
-    pebblePositions.forEach(({ x, z, s }) => {
-      const pebbleGeo = new THREE.SphereGeometry(s, 8, 8);
-      pebbleGeo.scale(1.2, 0.6, 1.0);
-      const pebble = new THREE.Mesh(pebbleGeo, stoneMatPebble);
-      pebble.position.set(x, -0.12, z);
-      this.group.add(pebble);
-    });
+    for (const conf of floraConfigs) {
+      try {
+        const flora = await assetManager.getModel(conf.path);
+        flora.position.set(conf.x, -0.15, conf.z);
+        flora.scale.set(conf.s, conf.s, conf.s);
+        this.group.add(flora);
+      } catch (e) {
+        console.warn('Fallback flora for', conf.path);
+      }
+    }
+
+    // 5. Kenney Nature Kit Fences
+    const fenceConfigs = [
+      { path: '/assets/environment/nature/fence_simple.glb', x: -1.8, z: -4.5, s: 0.8, rot: 0 },
+      { path: '/assets/environment/nature/fence_simple.glb', x: 1.8, z: -4.5, s: 0.8, rot: 0 },
+      { path: '/assets/environment/nature/fence_simple.glb', x: -1.8, z: 4.5, s: 0.8, rot: Math.PI },
+      { path: '/assets/environment/nature/fence_simple.glb', x: 1.8, z: 4.5, s: 0.8, rot: Math.PI },
+    ];
+
+    for (const conf of fenceConfigs) {
+      try {
+        const fence = await assetManager.getModel(conf.path);
+        fence.position.set(conf.x, -0.15, conf.z);
+        fence.scale.set(conf.s, conf.s, conf.s);
+        fence.rotation.y = conf.rot;
+        this.group.add(fence);
+      } catch (e) {
+        console.warn('Fallback fence for', conf.path);
+      }
+    }
   }
 }
