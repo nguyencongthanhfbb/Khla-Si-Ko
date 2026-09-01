@@ -4,6 +4,7 @@
  */
 
 import * as THREE from 'three';
+import { KhmerRoofMiniature3D, KhmerGardenProps3D } from './KhmerDecor3D';
 
 export class DioramaEnvironment {
   public group: THREE.Group;
@@ -16,7 +17,7 @@ export class DioramaEnvironment {
   private buildEnvironment() {
     // 1. Warm Handcrafted Wooden Tabletop
     const tableMat = new THREE.MeshStandardMaterial({
-      color: 0x3d2116, // Rich dark rosewood tabletop
+      color: 0x381f14, // Rich dark rosewood tabletop
       roughness: 0.65,
       metalness: 0.05,
     });
@@ -29,7 +30,7 @@ export class DioramaEnvironment {
     // Decorative Natural Woven Bamboo Mat Base
     const matGeo = new THREE.CylinderGeometry(5.0, 5.2, 0.04, 36);
     const matMaterial = new THREE.MeshStandardMaterial({
-      color: 0xd9be9b, // Warm bamboo straw
+      color: 0xd4ba96, // Warm bamboo straw
       roughness: 0.9,
     });
     const matMesh = new THREE.Mesh(matGeo, matMaterial);
@@ -37,59 +38,40 @@ export class DioramaEnvironment {
     matMesh.receiveShadow = true;
     this.group.add(matMesh);
 
-    // 2. Miniature Khmer Stone Temple Prasat Spire Ornaments (Angkor Wat silhouette)
-    const stoneMat = new THREE.MeshStandardMaterial({
-      color: 0x9e8c79, // Warm Bayon sandstone
-      roughness: 0.82,
-    });
+    // 2. Miniature Khmer Wooden Village Pavilion (Sala) Silhouette in Background
+    const pavilionLeft = new KhmerRoofMiniature3D();
+    pavilionLeft.position.set(-4.5, -0.15, -2.6);
+    pavilionLeft.scale.set(0.72, 0.72, 0.72);
+    pavilionLeft.rotation.y = 0.45;
+    this.group.add(pavilionLeft);
 
-    const spirePositions = [
-      { x: -4.5, z: 0, scale: 0.85 },
-      { x: 4.5, z: 0, scale: 0.85 },
-      { x: 0, z: -4.5, scale: 0.85 },
-      { x: 0, z: 4.5, scale: 0.72 },
-    ];
+    const pavilionRight = new KhmerRoofMiniature3D();
+    pavilionRight.position.set(4.5, -0.15, -2.5);
+    pavilionRight.scale.set(0.72, 0.72, 0.72);
+    pavilionRight.rotation.y = -0.45;
+    this.group.add(pavilionRight);
 
-    spirePositions.forEach(({ x, z, scale }) => {
-      const spireGroup = new THREE.Group();
-      spireGroup.position.set(x, -0.15, z);
-      spireGroup.scale.set(scale, scale, scale);
+    // 3. Khmer Village Clay Water Jars (K'am) on Wooden Stands
+    const jar1 = new KhmerGardenProps3D();
+    jar1.position.set(-4.2, -0.15, 2.8);
+    jar1.scale.set(0.75, 0.75, 0.75);
+    this.group.add(jar1);
 
-      // Base tier
-      const t1 = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.32, 0.85), stoneMat);
-      t1.position.y = 0.16;
-      t1.castShadow = true;
-      spireGroup.add(t1);
+    const jar2 = new KhmerGardenProps3D();
+    jar2.position.set(4.2, -0.15, 2.7);
+    jar2.scale.set(0.75, 0.75, 0.75);
+    this.group.add(jar2);
 
-      // Middle tier
-      const t2 = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.35, 0.65), stoneMat);
-      t2.position.y = 0.48;
-      t2.castShadow = true;
-      spireGroup.add(t2);
-
-      // Top tower cone / finial
-      const cone = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.75, 8), stoneMat);
-      cone.position.y = 0.95;
-      cone.castShadow = true;
-      spireGroup.add(cone);
-
-      const tip = new THREE.Mesh(new THREE.SphereGeometry(0.085, 8, 8), stoneMat);
-      tip.position.y = 1.38;
-      spireGroup.add(tip);
-
-      this.group.add(spireGroup);
-    });
-
-    // 3. Stylized Low-Poly Miniature Trees
+    // 4. Stylized Low-Poly Miniature Trees
     const woodTrunkMat = new THREE.MeshStandardMaterial({ color: 0x5a3d28, roughness: 0.8 });
     const leavesMat1 = new THREE.MeshStandardMaterial({ color: 0x2ed573, roughness: 0.6 }); // Emerald
     const leavesMat2 = new THREE.MeshStandardMaterial({ color: 0x26af61, roughness: 0.6 }); // Forest
 
     const treePositions = [
-      { x: -4.3, z: -3.8, mat: leavesMat1, s: 0.95 },
-      { x: 4.2, z: -3.9, mat: leavesMat2, s: 1.05 },
-      { x: -4.4, z: 3.6, mat: leavesMat2, s: 0.9 },
-      { x: 4.3, z: 3.7, mat: leavesMat1, s: 0.92 },
+      { x: -4.3, z: -4.2, mat: leavesMat1, s: 0.95 },
+      { x: 4.3, z: -4.3, mat: leavesMat2, s: 1.05 },
+      { x: -4.6, z: 1.2, mat: leavesMat2, s: 0.85 },
+      { x: 4.6, z: 1.1, mat: leavesMat1, s: 0.88 },
     ];
 
     treePositions.forEach(({ x, z, mat, s }) => {
@@ -116,15 +98,15 @@ export class DioramaEnvironment {
       this.group.add(treeGroup);
     });
 
-    // 4. Floating Lotus Pads & Pink Blossoms
+    // 5. Floating Lotus Pads & Pink Blossoms
     const petalMat = new THREE.MeshStandardMaterial({ color: 0xff7675, roughness: 0.38 });
     const lotusCenterMat = new THREE.MeshStandardMaterial({ color: 0xfeca57 });
 
     const lotusPositions = [
-      { x: -3.3, z: -4.2 },
-      { x: 3.3, z: -4.1 },
-      { x: -3.6, z: 2.2 },
-      { x: 3.6, z: 2.3 },
+      { x: -2.6, z: -4.2 },
+      { x: 2.6, z: -4.2 },
+      { x: -3.8, z: 3.8 },
+      { x: 3.8, z: 3.8 },
     ];
 
     lotusPositions.forEach(({ x, z }) => {
@@ -156,13 +138,13 @@ export class DioramaEnvironment {
       this.group.add(lotusGroup);
     });
 
-    // 5. Miniature Wooden Village Fence Posts
+    // 6. Miniature Wooden Village Bamboo Fence Posts
     const fenceMat = new THREE.MeshStandardMaterial({ color: 0x6e4932, roughness: 0.7 });
     const fencePositions = [
-      { x: -2.0, z: -4.6 },
-      { x: 2.0, z: -4.6 },
-      { x: -2.0, z: 4.6 },
-      { x: 2.0, z: 4.6 },
+      { x: -1.8, z: -4.5 },
+      { x: 1.8, z: -4.5 },
+      { x: -1.8, z: 4.5 },
+      { x: 1.8, z: 4.5 },
     ];
 
     fencePositions.forEach(({ x, z }) => {
@@ -173,13 +155,13 @@ export class DioramaEnvironment {
       this.group.add(postMesh);
     });
 
-    // 6. Smooth River Pebble Stones
+    // 7. Smooth River Pebble Stones
     const stoneMatPebble = new THREE.MeshStandardMaterial({ color: 0x7f8c8d, roughness: 0.8 });
     const pebblePositions = [
-      { x: -3.8, z: -1.5, s: 0.12 },
-      { x: 3.9, z: -1.2, s: 0.14 },
-      { x: -3.7, z: 1.2, s: 0.11 },
-      { x: 3.8, z: 1.4, s: 0.13 },
+      { x: -3.6, z: -1.2, s: 0.12 },
+      { x: 3.6, z: -1.1, s: 0.14 },
+      { x: -3.5, z: 2.1, s: 0.11 },
+      { x: 3.5, z: 2.2, s: 0.13 },
     ];
 
     pebblePositions.forEach(({ x, z, s }) => {

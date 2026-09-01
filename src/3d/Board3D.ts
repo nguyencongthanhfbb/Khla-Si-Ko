@@ -5,6 +5,7 @@
 
 import * as THREE from 'three';
 import { BOARD_SIZE, TOTAL_CELLS } from '../game/Rules';
+import { KhmerBoardBorder3D, KhmerCornerOrnament3D } from './KhmerDecor3D';
 
 export const CELL_SPACING = 1.25;
 export const BOARD_BASE_Y = 0.22;
@@ -85,40 +86,24 @@ export class Board3D {
     rimMesh.receiveShadow = true;
     this.group.add(rimMesh);
 
-    // 2. Khmer Gold Border Inlay Frame
-    const frameGeo = new THREE.BoxGeometry(5.35, 0.025, 5.35);
-    const frameMesh = new THREE.Mesh(frameGeo, this.goldAccentMaterial);
-    frameMesh.position.y = 0.232;
-    this.group.add(frameMesh);
+    // 2. Khmer Carved Wooden Border Inlay with rhythmic motif
+    const borderDecor = new KhmerBoardBorder3D(this.goldAccentMaterial, this.woodMaterial);
+    this.group.add(borderDecor);
 
-    // 3. Khmer Lotus Relief Motifs at 4 Outer Corners
-    const cornerOffset = 2.48;
+    // 3. Khmer Lotus & Naga Corner Ornaments at 4 Outer Corners
+    const cornerOffset = 2.62;
     const corners = [
-      [-cornerOffset, -cornerOffset, 0],
-      [cornerOffset, -cornerOffset, Math.PI / 2],
-      [cornerOffset, cornerOffset, Math.PI],
-      [-cornerOffset, cornerOffset, -Math.PI / 2],
+      [-cornerOffset, -cornerOffset, Math.PI / 4],
+      [cornerOffset, -cornerOffset, (3 * Math.PI) / 4],
+      [cornerOffset, cornerOffset, (5 * Math.PI) / 4],
+      [-cornerOffset, cornerOffset, (7 * Math.PI) / 4],
     ];
 
     corners.forEach(([x, z, rot]) => {
-      const motifGroup = new THREE.Group();
-      motifGroup.position.set(x, 0.245, z);
-      motifGroup.rotation.y = rot;
-
-      // Stylized lotus bud petal
-      const petalGeo = new THREE.ConeGeometry(0.18, 0.28, 4);
-      petalGeo.rotateX(Math.PI / 2);
-      const petalMesh = new THREE.Mesh(petalGeo, this.goldAccentMaterial);
-      petalMesh.scale.set(1.2, 0.35, 1.0);
-      motifGroup.add(petalMesh);
-
-      // Gold bead finial
-      const beadGeo = new THREE.SphereGeometry(0.065, 8, 8);
-      const beadMesh = new THREE.Mesh(beadGeo, this.goldAccentMaterial);
-      beadMesh.position.set(0, 0.02, 0.12);
-      motifGroup.add(beadMesh);
-
-      this.group.add(motifGroup);
+      const cornerOrnament = new KhmerCornerOrnament3D(this.goldAccentMaterial, this.woodMaterial);
+      cornerOrnament.position.set(x, 0.23, z);
+      cornerOrnament.rotation.y = rot;
+      this.group.add(cornerOrnament);
     });
 
     // 4. Carved Orthogonal Grid Lines (Up, Down, Left, Right)
