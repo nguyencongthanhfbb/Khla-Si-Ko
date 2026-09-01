@@ -7,7 +7,8 @@ import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { Tiger3D } from '../3d/Tiger3D';
 import { Cow3D } from '../3d/Cow3D';
-import { Board3D } from '../3d/Board3D';
+import { KbachBorderStrip3D } from '../3d/KhmerDecor3D';
+import { assetManager } from '../3d/AssetManager';
 
 interface CharacterPreview3DProps {
   type: 'TIGER' | 'COW' | 'HERO_DUO';
@@ -39,8 +40,8 @@ export const CharacterPreview3D: React.FC<CharacterPreview3DProps> = ({
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mount.appendChild(renderer.domElement);
 
-    // 2. Warm Ambient & Directional Lighting
-    const ambientLight = new THREE.AmbientLight(0xfff8ee, 1.2);
+    // 2. Warm Sunny Daylight Ambient & Directional Lighting
+    const ambientLight = new THREE.AmbientLight(0xfff8ee, 1.3);
     scene.add(ambientLight);
 
     const dirLight = new THREE.DirectionalLight(0xfff5e6, 1.4);
@@ -50,7 +51,7 @@ export const CharacterPreview3D: React.FC<CharacterPreview3DProps> = ({
     dirLight.shadow.mapSize.height = 512;
     scene.add(dirLight);
 
-    const rimLight = new THREE.DirectionalLight(0xffc078, 0.8);
+    const rimLight = new THREE.DirectionalLight(0xffd8a8, 0.7);
     rimLight.position.set(-3, 3, -3);
     scene.add(rimLight);
 
@@ -70,8 +71,8 @@ export const CharacterPreview3D: React.FC<CharacterPreview3DProps> = ({
       tigerModel.group.scale.set(1.15, 1.15, 1.15);
       rootGroup.add(tigerModel.group);
 
-      // Mini Pedestal
-      const pedMat = new THREE.MeshStandardMaterial({ color: 0x5a3520, roughness: 0.6 });
+      // Mini Handcrafted Wooden Pedestal
+      const pedMat = new THREE.MeshStandardMaterial({ color: 0x422415, roughness: 0.65, metalness: 0.04 });
       const ped = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.95, 0.18, 24), pedMat);
       ped.position.y = -0.09;
       ped.receiveShadow = true;
@@ -85,42 +86,66 @@ export const CharacterPreview3D: React.FC<CharacterPreview3DProps> = ({
       cowModel.group.scale.set(1.15, 1.15, 1.15);
       rootGroup.add(cowModel.group);
 
-      // Mini Pedestal
-      const pedMat = new THREE.MeshStandardMaterial({ color: 0x5a3520, roughness: 0.6 });
+      // Mini Handcrafted Wooden Pedestal
+      const pedMat = new THREE.MeshStandardMaterial({ color: 0x422415, roughness: 0.65, metalness: 0.04 });
       const ped = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.95, 0.18, 24), pedMat);
       ped.position.y = -0.09;
       ped.receiveShadow = true;
       rootGroup.add(ped);
     } else {
-      // HERO_DUO (Home Screen 3D Miniature Showcase with 3D Tiger, miniature board, 3D Cow)
-      camera.position.set(0, 3.2, 4.4);
-      camera.lookAt(0, 0.2, 0);
+      // HERO_DUO (Home Screen 3D Miniature Showcase with 3D Tiger, miniature Khmer board, 3D Cow, and background stilt house)
+      camera.position.set(0, 2.9, 4.6);
+      camera.lookAt(0, 0.25, 0);
 
-      // Miniature wooden board
-      const miniBoardMat = new THREE.MeshStandardMaterial({ color: 0x5a3520, roughness: 0.5 });
-      const miniBoard = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.18, 2.4), miniBoardMat);
+      // Background Miniature Khmer Stilt House
+      assetManager.getModel('/assets/game/khmer/khmer_stilt_house.glb').then((house) => {
+        if (house) {
+          house.position.set(0, -0.1, -2.8);
+          house.scale.set(0.42, 0.42, 0.42);
+          house.rotation.y = 0.1;
+          rootGroup.add(house);
+        }
+      });
+
+      // Miniature handcrafted wooden board
+      const miniBoardMat = new THREE.MeshStandardMaterial({
+        color: 0x422415,
+        roughness: 0.65,
+        metalness: 0.04,
+      });
+      const miniBoard = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.18, 2.6), miniBoardMat);
       miniBoard.position.y = 0;
       miniBoard.receiveShadow = true;
       rootGroup.add(miniBoard);
 
       // Inner tile grid lines
-      const tileMat = new THREE.MeshStandardMaterial({ color: 0xf5ebd9, roughness: 0.6 });
-      const tile = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.02, 2.1), tileMat);
+      const tileMat = new THREE.MeshStandardMaterial({ color: 0xf5ebd9, roughness: 0.55 });
+      const tile = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.02, 2.2), tileMat);
       tile.position.y = 0.1;
       rootGroup.add(tile);
 
-      // 3D Tiger (positioned at top/north side of board)
+      // Kbach border strip accents
+      const kbachN = new KbachBorderStrip3D(2.0);
+      kbachN.position.set(0, 0.1, -1.15);
+      kbachN.scale.set(0.55, 0.55, 0.55);
+      const kbachS = new KbachBorderStrip3D(2.0);
+      kbachS.position.set(0, 0.1, 1.15);
+      kbachS.rotation.y = Math.PI;
+      kbachS.scale.set(0.55, 0.55, 0.55);
+      rootGroup.add(kbachN, kbachS);
+
+      // 3D Tiger (positioned at top/north side of board facing south)
       tigerModel = new Tiger3D();
-      tigerModel.group.position.set(0, 0.1, -0.65);
+      tigerModel.group.position.set(0, 0.1, -0.62);
       tigerModel.group.rotation.y = 0;
-      tigerModel.group.scale.set(0.95, 0.95, 0.95);
+      tigerModel.group.scale.set(0.9, 0.9, 0.9);
       rootGroup.add(tigerModel.group);
 
-      // 3D Cow (positioned at bottom/south side of board)
+      // 3D Cow (positioned at bottom/south side of board facing north)
       cowModel = new Cow3D(1);
-      cowModel.group.position.set(0, 0.1, 0.65);
+      cowModel.group.position.set(0, 0.1, 0.62);
       cowModel.group.rotation.y = Math.PI;
-      cowModel.group.scale.set(0.95, 0.95, 0.95);
+      cowModel.group.scale.set(0.9, 0.9, 0.9);
       rootGroup.add(cowModel.group);
     }
 
@@ -136,7 +161,7 @@ export const CharacterPreview3D: React.FC<CharacterPreview3DProps> = ({
       cowModel?.update(delta, false, false);
 
       if (autoRotate && type === 'HERO_DUO') {
-        rootGroup.rotation.y = Math.sin(clock.getElapsedTime() * 0.4) * 0.22;
+        rootGroup.rotation.y = Math.sin(clock.getElapsedTime() * 0.35) * 0.2;
       } else if (autoRotate) {
         rootGroup.rotation.y += delta * 0.4;
       }

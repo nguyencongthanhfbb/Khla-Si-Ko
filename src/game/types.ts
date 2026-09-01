@@ -8,6 +8,11 @@ export type Phase = 'PLACEMENT' | 'MOVEMENT';
 export type PieceType = 'COW' | 'TIGER';
 export type MoveType = 'PLACE' | 'MOVE' | 'CAPTURE';
 
+export interface BoardCoordinate {
+  row: number;
+  col: number;
+}
+
 export interface Piece {
   id: string;
   type: PieceType;

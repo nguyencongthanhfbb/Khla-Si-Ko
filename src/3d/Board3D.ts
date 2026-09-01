@@ -4,178 +4,246 @@
  */
 
 import * as THREE from 'three';
-import { BOARD_SIZE, TOTAL_CELLS } from '../game/Rules';
-import { KhmerBoardBorder3D, KhmerCornerOrnament3D } from './KhmerDecor3D';
+import { BoardCoordinate } from '../game/types';
+import { KhmerBoardCorner3D, KbachBorderStrip3D } from './KhmerDecor3D';
 
-export const CELL_SPACING = 1.25;
-export const BOARD_BASE_Y = 0.22;
+export const BOARD_BASE_Y = 0.18;
 
-export function getCellPosition(index: number): THREE.Vector3 {
-  const row = Math.floor(index / BOARD_SIZE);
-  const col = index % BOARD_SIZE;
-  const x = (col - (BOARD_SIZE - 1) / 2) * CELL_SPACING;
-  const z = (row - (BOARD_SIZE - 1) / 2) * CELL_SPACING;
+const PALETTE = {
+  woodDark: 0x3d2214, // Handcrafted dark teak base
+  woodMedium: 0x613a20, // Carved wooden border
+  woodTeak: 0x8a532f, // Frame trim
+  woodLight: 0xb58252, // Soft grid grooves
+  tileCream: 0xf6ede0, // Inset light wooden tile
+  tileCreamAlt: 0xeee3d3, // Subtle alternating tile tone
+  khmerGold: 0xd4af37, // Restrained gold accent
+};
+
+const GRID_OFFSET = 1.5; // (4 - 1) / 2
+const TILE_SIZE = 1.0;
+
+/**
+ * Global helper to compute 3D world position for a board cell index or coordinate.
+ */
+export function getCellPosition(
+  cellIndexOrCoord: number | BoardCoordinate | { row: number; col: number },
+  colOverride?: number
+): THREE.Vector3 {
+  let row = 0;
+  let col = 0;
+
+  if (typeof cellIndexOrCoord === 'number') {
+    if (typeof colOverride === 'number') {
+      row = cellIndexOrCoord;
+      col = colOverride;
+    } else {
+      row = Math.floor(cellIndexOrCoord / 4);
+      col = cellIndexOrCoord % 4;
+    }
+  } else {
+    row = cellIndexOrCoord.row;
+    col = cellIndexOrCoord.col;
+  }
+
+  const x = (col - GRID_OFFSET) * TILE_SIZE;
+  const z = (row - GRID_OFFSET) * TILE_SIZE;
   return new THREE.Vector3(x, BOARD_BASE_Y, z);
 }
 
 export class Board3D {
   public group: THREE.Group;
   public cellMeshes: THREE.Mesh[] = [];
-  public coordLabelsGroup: THREE.Group;
-  private woodMaterial: THREE.MeshStandardMaterial;
-  private cellMaterial: THREE.MeshStandardMaterial;
-  private cellAltMaterial: THREE.MeshStandardMaterial;
-  private goldAccentMaterial: THREE.MeshStandardMaterial;
-  private gridLineMaterial: THREE.MeshStandardMaterial;
+  private cellMeshMap: Map<string, THREE.Mesh> = new Map();
+  private debugMarkersGroup: THREE.Group = new THREE.Group();
+  private gridOffset: number = GRID_OFFSET;
+  private tileSize: number = TILE_SIZE;
+  private tileGap: number = 0.08;
 
   constructor() {
     this.group = new THREE.Group();
-
-    // 1. Warm Handcrafted Materials
-    this.woodMaterial = new THREE.MeshStandardMaterial({
-      color: 0x5a3520, // Warm rich teak wood
-      roughness: 0.52,
-      metalness: 0.08,
-    });
-
-    this.cellMaterial = new THREE.MeshStandardMaterial({
-      color: 0xf5ebd9, // Soft creamy birch tile
-      roughness: 0.58,
-      metalness: 0.04,
-    });
-
-    this.cellAltMaterial = new THREE.MeshStandardMaterial({
-      color: 0xebdcbf, // Alternating warm maple birch tile
-      roughness: 0.58,
-      metalness: 0.04,
-    });
-
-    this.goldAccentMaterial = new THREE.MeshStandardMaterial({
-      color: 0xd4af37, // Traditional Khmer antique gold inlay
-      roughness: 0.28,
-      metalness: 0.72,
-    });
-
-    this.gridLineMaterial = new THREE.MeshStandardMaterial({
-      color: 0x8a6242, // Warm carved groove line
-      roughness: 0.65,
-    });
-
+    this.group.name = 'Khmer_Handcrafted_Board';
     this.buildBoard();
-    this.coordLabelsGroup = new THREE.Group();
-    this.group.add(this.coordLabelsGroup);
+    this.buildDebugCoordinates();
   }
 
   private buildBoard() {
-    // 1. Main Beveled Wooden Block Base
-    const baseWidth = 5.85;
-    const baseHeight = 0.46;
-    const baseGeo = new THREE.BoxGeometry(baseWidth, baseHeight, baseWidth);
-    const baseMesh = new THREE.Mesh(baseGeo, this.woodMaterial);
-    baseMesh.position.y = 0;
-    baseMesh.castShadow = true;
+    // 1. Lower Solid Wooden Foundation Tier (Handcrafted dark teak)
+    const baseGeo = new THREE.BoxGeometry(5.4, 0.32, 5.4);
+    const baseMat = new THREE.MeshStandardMaterial({
+      color: PALETTE.woodDark,
+      roughness: 0.72,
+      metalness: 0.03,
+      flatShading: true,
+    });
+    const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+    baseMesh.position.y = -0.16;
     baseMesh.receiveShadow = true;
     this.group.add(baseMesh);
 
-    // Outer Layered Tier Rim
-    const rimWidth = 6.25;
-    const rimHeight = 0.22;
-    const rimGeo = new THREE.BoxGeometry(rimWidth, rimHeight, rimWidth);
-    const rimMesh = new THREE.Mesh(rimGeo, this.woodMaterial);
-    rimMesh.position.y = -0.16;
-    rimMesh.receiveShadow = true;
-    this.group.add(rimMesh);
+    // 2. Upper Beveled Wooden Frame Tier
+    const frameGeo = new THREE.BoxGeometry(4.8, 0.16, 4.8);
+    const frameMat = new THREE.MeshStandardMaterial({
+      color: PALETTE.woodMedium,
+      roughness: 0.65,
+      metalness: 0.04,
+      flatShading: true,
+    });
+    const frameMesh = new THREE.Mesh(frameGeo, frameMat);
+    frameMesh.position.y = 0.06;
+    frameMesh.receiveShadow = true;
+    this.group.add(frameMesh);
 
-    // 2. Khmer Carved Wooden Border Inlay with rhythmic motif
-    const borderDecor = new KhmerBoardBorder3D(this.goldAccentMaterial, this.woodMaterial);
-    this.group.add(borderDecor);
+    // 3. Carved Kbach Relief Border Strips along 4 edges
+    const borderOffset = 2.22;
+    const borderY = 0.14;
 
-    // 3. Khmer Lotus & Naga Corner Ornaments at 4 Outer Corners
-    const cornerOffset = 2.62;
+    // North & South Kbach strips
+    const stripN = new KbachBorderStrip3D(3.6);
+    stripN.position.set(0, borderY, -borderOffset);
+    const stripS = new KbachBorderStrip3D(3.6);
+    stripS.position.set(0, borderY, borderOffset);
+    stripS.rotation.y = Math.PI;
+
+    // East & West Kbach strips
+    const stripE = new KbachBorderStrip3D(3.6);
+    stripE.position.set(borderOffset, borderY, 0);
+    stripE.rotation.y = -Math.PI / 2;
+    const stripW = new KbachBorderStrip3D(3.6);
+    stripW.position.set(-borderOffset, borderY, 0);
+    stripW.rotation.y = Math.PI / 2;
+
+    this.group.add(stripN, stripS, stripE, stripW);
+
+    // 4. Four Matching Khmer Carved Corner Ornaments
+    const cornerOffset = 2.18;
+    const cornerY = 0.14;
+
     const corners = [
-      [-cornerOffset, -cornerOffset, Math.PI / 4],
-      [cornerOffset, -cornerOffset, (3 * Math.PI) / 4],
-      [cornerOffset, cornerOffset, (5 * Math.PI) / 4],
-      [-cornerOffset, cornerOffset, (7 * Math.PI) / 4],
+      { x: -cornerOffset, z: -cornerOffset, rot: 0 },
+      { x: cornerOffset, z: -cornerOffset, rot: -Math.PI / 2 },
+      { x: cornerOffset, z: cornerOffset, rot: Math.PI },
+      { x: -cornerOffset, z: cornerOffset, rot: Math.PI / 2 },
     ];
 
-    corners.forEach(([x, z, rot]) => {
-      const cornerOrnament = new KhmerCornerOrnament3D(this.goldAccentMaterial, this.woodMaterial);
-      cornerOrnament.position.set(x, 0.23, z);
-      cornerOrnament.rotation.y = rot;
-      this.group.add(cornerOrnament);
+    corners.forEach((c) => {
+      const cornerMesh = new KhmerBoardCorner3D(1.0);
+      cornerMesh.position.set(c.x, cornerY, c.z);
+      cornerMesh.rotation.y = c.rot;
+      this.group.add(cornerMesh);
     });
 
-    // 4. Carved Orthogonal Grid Lines (Up, Down, Left, Right)
-    for (let r = 0; r < BOARD_SIZE; r++) {
-      const z = (r - (BOARD_SIZE - 1) / 2) * CELL_SPACING;
-      // Horizontal line
-      const hLine = new THREE.Mesh(new THREE.BoxGeometry(4.95, 0.015, 0.06), this.gridLineMaterial);
-      hLine.position.set(0, 0.225, z);
-      this.group.add(hLine);
+    // 5. 4x4 Inset Wooden Playing Tiles (Warm cream / natural light wood)
+    const effectiveTileWidth = this.tileSize - this.tileGap;
 
-      const x = (r - (BOARD_SIZE - 1) / 2) * CELL_SPACING;
-      // Vertical line
-      const vLine = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.015, 4.95), this.gridLineMaterial);
-      vLine.position.set(x, 0.225, 0);
-      this.group.add(vLine);
+    for (let r = 0; r < 4; r++) {
+      for (let c = 0; c < 4; c++) {
+        const cellIndex = r * 4 + c;
+        const x = (c - this.gridOffset) * this.tileSize;
+        const z = (r - this.gridOffset) * this.tileSize;
+
+        const isAlt = (r + c) % 2 === 1;
+        const tileMat = new THREE.MeshStandardMaterial({
+          color: isAlt ? PALETTE.tileCreamAlt : PALETTE.tileCream,
+          roughness: 0.5,
+          metalness: 0.02,
+          flatShading: true,
+        });
+
+        const tileGeo = new THREE.BoxGeometry(effectiveTileWidth, 0.06, effectiveTileWidth);
+        const tileMesh = new THREE.Mesh(tileGeo, tileMat);
+        tileMesh.position.set(x, 0.16, z);
+        tileMesh.receiveShadow = true;
+        tileMesh.userData = { cellIndex, row: r, col: c, coord: `${r},${c}` };
+
+        this.group.add(tileMesh);
+        this.cellMeshes.push(tileMesh);
+        this.cellMeshMap.set(`${r},${c}`, tileMesh);
+      }
     }
 
-    // 5. Create 16 individual Board Cells
-    for (let i = 0; i < TOTAL_CELLS; i++) {
-      const pos = getCellPosition(i);
-      const row = Math.floor(i / BOARD_SIZE);
-      const col = i % BOARD_SIZE;
-      const isAlt = (row + col) % 2 === 1;
+    // 6. Subtle Inset Wooden Grid Groove Borders
+    const grooveMat = new THREE.MeshStandardMaterial({
+      color: PALETTE.woodDark,
+      roughness: 0.8,
+    });
 
-      // Cell tile surface with gentle rounded beveled edge
-      const cellGeo = new THREE.BoxGeometry(1.12, 0.045, 1.12);
-      const cellMesh = new THREE.Mesh(cellGeo, isAlt ? this.cellAltMaterial : this.cellMaterial);
-      cellMesh.position.set(pos.x, 0.235, pos.z);
-      cellMesh.receiveShadow = true;
-      cellMesh.userData = { cellIndex: i };
+    for (let i = 0; i <= 4; i++) {
+      const pos = (i - 2) * this.tileSize;
+      // Horizontal groove
+      const hGroove = new THREE.Mesh(new THREE.BoxGeometry(4.0, 0.02, 0.03), grooveMat);
+      hGroove.position.set(0, 0.17, pos);
+      // Vertical groove
+      const vGroove = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.02, 4.0), grooveMat);
+      vGroove.position.set(pos, 0.17, 0);
 
-      // Inner subtle border line
-      const innerLineGeo = new THREE.BoxGeometry(1.15, 0.012, 1.15);
-      const innerLineMesh = new THREE.Mesh(innerLineGeo, this.gridLineMaterial);
-      innerLineMesh.position.set(pos.x, 0.222, pos.z);
-      this.group.add(innerLineMesh);
+      this.group.add(hGroove, vGroove);
+    }
+  }
 
-      this.cellMeshes[i] = cellMesh;
-      this.group.add(cellMesh);
+  private buildDebugCoordinates() {
+    this.debugMarkersGroup.visible = false;
+    this.group.add(this.debugMarkersGroup);
+
+    for (let r = 0; r < 4; r++) {
+      for (let c = 0; c < 4; c++) {
+        const cellIndex = r * 4 + c;
+        const pos = getCellPosition(cellIndex);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 128;
+        canvas.height = 128;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = 'rgba(40, 20, 10, 0.85)';
+          ctx.beginPath();
+          ctx.arc(64, 64, 52, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = '#d4af37';
+          ctx.lineWidth = 4;
+          ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 36px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(`${cellIndex}`, 64, 48);
+
+          ctx.fillStyle = '#f5ebd9';
+          ctx.font = '22px sans-serif';
+          ctx.fillText(`(${r},${c})`, 64, 86);
+        }
+
+        const texture = new THREE.CanvasTexture(canvas);
+        const spriteMat = new THREE.SpriteMaterial({
+          map: texture,
+          transparent: true,
+          opacity: 0.9,
+          depthTest: false,
+        });
+        const sprite = new THREE.Sprite(spriteMat);
+        sprite.position.set(pos.x, pos.y + 0.25, pos.z);
+        sprite.scale.set(0.45, 0.45, 0.45);
+
+        this.debugMarkersGroup.add(sprite);
+      }
     }
   }
 
   public updateDebugCoordinates(show: boolean) {
-    this.coordLabelsGroup.clear();
-    if (!show) return;
+    this.debugMarkersGroup.visible = show;
+  }
 
-    for (let i = 0; i < TOTAL_CELLS; i++) {
-      const pos = getCellPosition(i);
-      const canvas = document.createElement('canvas');
-      canvas.width = 64;
-      canvas.height = 64;
-      const ctx = canvas.getContext('2d')!;
-      ctx.fillStyle = 'rgba(74, 40, 20, 0.88)';
-      ctx.beginPath();
-      ctx.arc(32, 32, 28, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.lineWidth = 4;
-      ctx.strokeStyle = '#ffd32a';
-      ctx.stroke();
+  public getCellWorldPosition(row: number, col: number): THREE.Vector3 {
+    return getCellPosition({ row, col });
+  }
 
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 28px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(i.toString(), 32, 33);
-
-      const texture = new THREE.CanvasTexture(canvas);
-      const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
-      const sprite = new THREE.Sprite(spriteMat);
-      sprite.position.set(pos.x, pos.y + 0.35, pos.z);
-      sprite.scale.set(0.45, 0.45, 0.45);
-      this.coordLabelsGroup.add(sprite);
+  public getCellMesh(coord: BoardCoordinate | number): THREE.Mesh | undefined {
+    if (typeof coord === 'number') {
+      const r = Math.floor(coord / 4);
+      const c = coord % 4;
+      return this.cellMeshMap.get(`${r},${c}`);
     }
+    return this.cellMeshMap.get(`${coord.row},${coord.col}`);
   }
 }

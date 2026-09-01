@@ -115,7 +115,7 @@ export class AssetManager {
       '/assets/game/environment/flower_yellowA.glb',
       '/assets/game/environment/grass.glb',
       '/assets/game/environment/fence_simple.glb',
-      '/assets/game/khmer/khmer_pavilion.glb',
+      '/assets/game/khmer/khmer_stilt_house.glb',
       '/assets/game/khmer/clay_jar_kam.glb',
       '/assets/vendor/quaternius/cow.glb',
       '/assets/vendor/kenney/mini-forest/tree_oak.glb',
