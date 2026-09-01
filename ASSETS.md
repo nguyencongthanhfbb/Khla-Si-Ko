@@ -1,64 +1,68 @@
-# Asset Documentation (Khla Si Ko v0.4 — Khmer Art Direction Reset)
+# Asset Documentation (Khla Si Ko — Khmer Art Direction v0.4)
 
-This document catalogs all physically generated and imported binary 3D GLB assets, vector badges, audio manifests, and cultural motifs utilized in **Khla Si Ko (ខ្លាស៊ីគោ — Khmer Tiger & Cow Game)** in full accordance with commercial and open-source licensing guidelines.
+This document catalogs all 3D GLB assets, vendor files, vector badges, audio manifests, and cultural motifs utilized in **Khla Si Ko (ខ្លាស៊ីគោ — Khmer Tiger & Cow Game)** in full accordance with commercial and open-source licensing guidelines.
 
 ---
 
-### 1. Characters (`public/assets/game/characters/`)
-- **Cute Khmer Toy Cow Model**:
-  - **File**: `public/assets/game/characters/cow/cow.glb`
-  - **Vector Badge**: `public/assets/characters/cow/cow_badge.svg`
-  - **Source**: Handcrafted Khmer Wooden Toy Pipeline (Harmonized with Quaternius LowPoly Animal Scale)
-  - **License**: CC0 1.0 Universal (Public Domain)
-  - **Description**: Chibi toy cow with warm painted porcelain-wood finish, smooth cocoa patches, rounded golden wood horns, soft baby-pink snout, and red collar with brass bell.
-  - **Runtime integration**: Loaded via `src/3d/AssetManager.ts` & `src/3d/Cow3D.ts`.
+### 1. Vendor 3D Assets
 
-- **Cute Khmer Toy Tiger Model**:
+#### Quaternius (`public/assets/vendor/quaternius/`)
+- **Source Pack**: Quaternius LowPoly Animals Pack
+- **License**: CC0 1.0 Universal (Public Domain)
+- **Local File**: `public/assets/vendor/quaternius/cow.glb`
+- **Description**: Original 3D Cow model adapted directly at runtime via `CowAssetAdapter.ts` for scale, orientation, material finish, and animations.
+- **Runtime Integration**: Loaded directly via `src/3d/AssetManager.ts` & `src/3d/CowAssetAdapter.ts`.
+
+#### Kenney (`public/assets/vendor/kenney/`)
+- **Source Pack**: Kenney Mini-Forest Kit & Nature Kit
+- **License**: CC0 1.0 Universal (Public Domain)
+- **Source URL**: https://kenney.nl/assets
+- **Local Files**:
+  1. `public/assets/vendor/kenney/mini-forest/tree_oak.glb` — Oak tree with wooden trunk and layered canopy.
+  2. `public/assets/vendor/kenney/mini-forest/tree_default.glb` — Conifer/village tree.
+  3. `public/assets/vendor/kenney/mini-forest/fence_simple.glb` — Rustic bamboo/wood fencing.
+  4. `public/assets/vendor/kenney/mini-forest/rock_largeA.glb` — Smooth river boulder.
+  5. `public/assets/vendor/kenney/mini-forest/rock_smallA.glb` — Garden stone pebble.
+  6. `public/assets/vendor/kenney/mini-forest/plant_bush.glb` — Rounded courtyard shrub.
+  7. `public/assets/vendor/kenney/mini-forest/flower_redA.glb` — Stylized blossom.
+  8. `public/assets/vendor/kenney/mini-forest/flower_yellowA.glb` — Stylized blossom.
+  9. `public/assets/vendor/kenney/mini-forest/grass.glb` — Clustered diorama grass blades.
+- **Runtime Integration**: Loaded directly via `src/3d/AssetManager.ts` & `src/3d/DioramaEnvironment.ts`.
+
+---
+
+### 2. Characters & Visual Identity
+
+- **Cute Khmer Toy Tiger Mascot**:
   - **File**: `public/assets/game/characters/tiger/tiger.glb`
   - **Vector Badge**: `public/assets/characters/tiger/tiger_badge.svg`
-  - **Source**: Handcrafted Khmer Wooden Toy Pipeline
-  - **License**: CC0 1.0 Universal (Public Domain)
-  - **Description**: Chibi toy tiger with vibrant warm golden orange coat, cream cheeks, smiling muzzle, large glossy expressive eyes with sparkles, soft rounded ears, segmented curved tail, and painted wooden tiger stripes (clean forehead without arbitrary emblems).
-  - **Runtime integration**: Loaded via `src/3d/AssetManager.ts` & `src/3d/Tiger3D.ts`.
+  - **Description**: Chibi toy tiger with warm golden-orange painted lacquer finish, cream cheeks, smiling muzzle, large glossy expressive eyes, soft rounded ears, segmented curved tail, and painted wooden tiger stripes (clean forehead without arbitrary emblems).
+  - **Runtime Integration**: Loaded via `src/3d/AssetManager.ts` & `src/3d/Tiger3D.ts`.
+
+- **Cute Khmer Toy Cow**:
+  - **Vector Badge**: `public/assets/characters/cow/cow_badge.svg`
+  - **Description**: Matched in scale, proportions, painted wood lacquer finish, and expressive glossy eyes with the Tiger toy.
 
 ---
 
-### 2. Environment & Nature Props (`public/assets/game/environment/`)
-- **Source**: Kenney Nature Kit (CC0 1.0 Universal)
-- **License**: CC0 1.0 Universal (Public Domain)
-- **Files**:
-  1. `public/assets/game/environment/tree_oak.glb` — Stylized Oak tree with warm wooden trunk and layered foliage.
-  2. `public/assets/game/environment/tree_default.glb` — Village pine/conifer tree.
-  3. `public/assets/game/environment/rock_largeA.glb` — Smooth river boulder.
-  4. `public/assets/game/environment/rock_smallA.glb` — Garden pebble rock.
-  5. `public/assets/game/environment/plant_bush.glb` — Rounded diorama garden shrub.
-  6. `public/assets/game/environment/flower_redA.glb` — Stylized lotus rose diorama flower blossom.
-  7. `public/assets/game/environment/flower_yellowA.glb` — Stylized golden diorama flower blossom.
-  8. `public/assets/game/environment/grass.glb` — Clustered diorama grass blades.
-  9. `public/assets/game/environment/fence_simple.glb` — Rustic bamboo and wooden courtyard fence.
-- **Runtime integration**: Loaded via `src/3d/AssetManager.ts` & `src/3d/DioramaEnvironment.ts`.
+### 3. Handcrafted Khmer Cultural Architecture & Board (`src/3d/KhmerDecor3D.ts`)
+
+- **Traditional Khmer Stilt House (`KhmerStiltHouse3D`)**:
+  - Designed directly from authentic Cambodian rural stilt architecture (*Phteah Khmer*):
+    - Solid timber pillars/stilts with foundation
+    - Raised wooden platform & veranda with railings and entrance ladder
+    - High-sloped gable terracotta tile roof with curved crest ridge finials
+    - Terracotta water storage jar (*K'am*) on wooden stand at base
+- **Handcrafted Khmer Wooden Board (`Board3D` & `KhmerDecor3D`)**:
+  - Dark teak and rosewood beveled frame
+  - Rhythmic carved wooden **Kbach** leaf/petal frieze relief (*Kbach Phni Tes*) along all four borders
+  - Carved wooden corner brackets with subtle lotus/Naga curves and restrained gold accent beads
+  - Inset warm cream/sand wooden playing tiles
 
 ---
 
-### 3. Khmer Cultural Props (`public/assets/game/khmer/`)
-- **Source**: Traditional Cambodian Rural Courtyard & Ornamental Art
-- **License**: CC0 1.0 Universal (Public Domain)
-- **Files**:
-  1. `public/assets/game/khmer/khmer_stilt_house.glb` — Traditional Cambodian rural stilt house on visible wooden stilts with sloped gabled roof, wooden walls, and front porch with steps.
-  2. `public/assets/game/khmer/clay_jar_kam.glb` — Traditional Cambodian terracotta water storage pot (*K'am*) on a handcrafted wooden pedestal.
-- **Runtime integration**: Loaded via `src/3d/AssetManager.ts`, `src/3d/DioramaEnvironment.ts`, and `src/3d/KhmerDecor3D.ts`.
+### 4. Audio & Typography
 
----
-
-### 4. Audio Architecture (`public/assets/audio/`)
-- **Manifest**: `public/assets/audio/audio_manifest.json`
-- **Engine**: `src/audio/SoundEffects.ts`
-- **Source**: Real-time harmonic synthesizer with gentle toy frequencies.
-- **License**: CC0 1.0 Universal (Public Domain)
-- **Features**: Wooden clicks, cow placement bell pops, tiger jump whooshes, cartoon capture bursts, and pentatonic victory fanfares.
-
----
-
-### 5. UI Icons & Typography
+- **Audio Engine**: `src/audio/SoundEffects.ts` with harmonic toy sound synthesis (wooden clicks, bell placements, whoosh leaps, pentatonic victory fanfare).
 - **Icons**: Lucide React Icons (`lucide-react`) under ISC License.
 - **Typography**: Kantumruy Pro (Khmer script) & Plus Jakarta Sans via Google Fonts (SIL Open Font License 1.1).

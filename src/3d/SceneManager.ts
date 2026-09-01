@@ -9,7 +9,7 @@ import { DioramaEnvironment } from './DioramaEnvironment';
 import { Indicators3D } from './Indicators3D';
 import { CaptureEffects3D } from './CaptureEffects3D';
 import { GamePiece3D } from './GamePiece3D';
-import { GameState, Move, PieceType, Side } from '../game/types';
+import { GameState, Move, PieceType, Side, VisualStyle } from '../game/types';
 import { TOTAL_COWS, TOTAL_TIGERS } from '../game/Rules';
 
 export class SceneManager {
@@ -17,6 +17,10 @@ export class SceneManager {
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
   private renderer: THREE.WebGLRenderer;
+  private ambientLight!: THREE.AmbientLight;
+  private dirLight!: THREE.DirectionalLight;
+  private fillLight!: THREE.DirectionalLight;
+  private currentStyle: VisualStyle = 'CUBE_PETS';
 
   public board3D: Board3D;
   public environment: DioramaEnvironment;
@@ -33,8 +37,8 @@ export class SceneManager {
   private isInteracting: boolean = false;
   private onInteractCallback?: (cellIndex: number, pieceId?: string) => void;
 
-  private cameraTarget: THREE.Vector3 = new THREE.Vector3(0, 0.2, 0);
-  private defaultCameraPos: THREE.Vector3 = new THREE.Vector3(0, 7.2, 5.6);
+  private cameraTarget: THREE.Vector3 = new THREE.Vector3(0, 0.2, -0.35);
+  private defaultCameraPos: THREE.Vector3 = new THREE.Vector3(0, 6.2, 5.0);
   private cameraShake: number = 0;
 
   constructor(container: HTMLElement) {
@@ -109,13 +113,13 @@ export class SceneManager {
   private setCameraPosition(aspect: number) {
     if (aspect < 0.75) {
       // Tall mobile portrait
-      this.defaultCameraPos.set(0, 9.2, 6.6);
+      this.defaultCameraPos.set(0, 8.4, 6.2);
     } else if (aspect < 1.1) {
       // Tablet / Square
-      this.defaultCameraPos.set(0, 7.8, 5.9);
+      this.defaultCameraPos.set(0, 7.2, 5.4);
     } else {
       // Desktop
-      this.defaultCameraPos.set(0, 6.9, 5.2);
+      this.defaultCameraPos.set(0, 6.2, 4.9);
     }
     this.camera.position.copy(this.defaultCameraPos);
     this.camera.lookAt(this.cameraTarget);
@@ -123,33 +127,69 @@ export class SceneManager {
 
   private setupLighting() {
     // Warm ambient light
-    const ambientLight = new THREE.AmbientLight(0xfff6ea, 1.25);
-    this.scene.add(ambientLight);
+    this.ambientLight = new THREE.AmbientLight(0xfff6ea, 1.25);
+    this.scene.add(this.ambientLight);
 
     // Main warm sunlight
-    const dirLight = new THREE.DirectionalLight(0xfffaee, 1.65);
-    dirLight.position.set(5.5, 11, 4.5);
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 1024;
-    dirLight.shadow.mapSize.height = 1024;
-    dirLight.shadow.camera.near = 0.5;
-    dirLight.shadow.camera.far = 25;
-    dirLight.shadow.camera.left = -4.6;
-    dirLight.shadow.camera.right = 4.6;
-    dirLight.shadow.camera.top = 4.6;
-    dirLight.shadow.camera.bottom = -4.6;
-    dirLight.shadow.bias = -0.0005;
-    this.scene.add(dirLight);
+    this.dirLight = new THREE.DirectionalLight(0xfffaee, 1.65);
+    this.dirLight.position.set(5.5, 11, 4.5);
+    this.dirLight.castShadow = true;
+    this.dirLight.shadow.mapSize.width = 1024;
+    this.dirLight.shadow.mapSize.height = 1024;
+    this.dirLight.shadow.camera.near = 0.5;
+    this.dirLight.shadow.camera.far = 25;
+    this.dirLight.shadow.camera.left = -4.6;
+    this.dirLight.shadow.camera.right = 4.6;
+    this.dirLight.shadow.camera.top = 4.6;
+    this.dirLight.shadow.camera.bottom = -4.6;
+    this.dirLight.shadow.bias = -0.0005;
+    this.scene.add(this.dirLight);
 
     // Soft sky fill light
-    const fillLight = new THREE.DirectionalLight(0xa5c9ff, 0.42);
-    fillLight.position.set(-5, 6, -4);
-    this.scene.add(fillLight);
+    this.fillLight = new THREE.DirectionalLight(0xa5c9ff, 0.42);
+    this.fillLight.position.set(-5, 6, -4);
+    this.scene.add(this.fillLight);
 
     // Subtle center warm sparkle point light
     const pointLight = new THREE.PointLight(0xffd32a, 0.55, 8);
     pointLight.position.set(0, 2.5, 0);
     this.scene.add(pointLight);
+  }
+
+  public setVisualStyle(style: VisualStyle) {
+    this.currentStyle = style;
+
+    if (style === 'CUBE_PETS') {
+      this.scene.background = new THREE.Color(0x271912);
+      this.ambientLight.color.setHex(0xfff6ea);
+      this.ambientLight.intensity = 1.25;
+      this.dirLight.color.setHex(0xfffaee);
+      this.dirLight.intensity = 1.65;
+      this.fillLight.color.setHex(0xa5c9ff);
+      this.fillLight.intensity = 0.42;
+    } else if (style === 'SOFT_CHIBI') {
+      this.scene.background = new THREE.Color(0x241a22);
+      this.ambientLight.color.setHex(0xfff0fa);
+      this.ambientLight.intensity = 1.4;
+      this.dirLight.color.setHex(0xfff5ee);
+      this.dirLight.intensity = 1.45;
+      this.fillLight.color.setHex(0xc8d8ff);
+      this.fillLight.intensity = 0.55;
+    } else if (style === 'KHMER_WOODEN') {
+      this.scene.background = new THREE.Color(0x1a0f08);
+      this.ambientLight.color.setHex(0xffeacc);
+      this.ambientLight.intensity = 1.15;
+      this.dirLight.color.setHex(0xffe0a8);
+      this.dirLight.intensity = 1.75;
+      this.fillLight.color.setHex(0x8a7050);
+      this.fillLight.intensity = 0.35;
+    }
+
+    this.board3D.setVisualStyle(style);
+    this.environment.setVisualStyle(style);
+    this.pieceMap.forEach((piece) => {
+      piece.setVisualStyle(style);
+    });
   }
 
   private setupEventListeners() {

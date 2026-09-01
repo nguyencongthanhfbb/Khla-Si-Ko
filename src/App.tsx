@@ -11,7 +11,7 @@ import {
   makeMove,
 } from './game/KhlaSiKoEngine';
 import { getAIMove } from './game/AI';
-import { GameSettings, GameState, Move, Side } from './game/types';
+import { GameSettings, GameState, Move, Side, VisualStyle } from './game/types';
 import { SceneManager } from './3d/SceneManager';
 import { sound } from './audio/SoundEffects';
 import { MainMenu } from './components/MainMenu';
@@ -38,15 +38,27 @@ export default function App() {
   const [selectedPieceId, setSelectedPieceId] = useState<string | null>(null);
   const [activeLegalMoves, setActiveLegalMoves] = useState<Move[]>([]);
 
-  // Settings
-  const [settings, setSettings] = useState<GameSettings>({
-    gameMode: 'PVP',
-    aiSide: 'TIGER',
-    aiDifficulty: 'EASY',
-    soundEnabled: true,
-    hapticsEnabled: true,
-    showCoordinates: false,
-    developerMode: false,
+  // Settings with Visual Style (Default: CUBE_PETS)
+  const [settings, setSettings] = useState<GameSettings>(() => {
+    let savedStyle: VisualStyle = 'CUBE_PETS';
+    try {
+      const stored = localStorage.getItem('khla_si_ko_style');
+      if (stored === 'CUBE_PETS' || stored === 'SOFT_CHIBI' || stored === 'KHMER_WOODEN') {
+        savedStyle = stored as VisualStyle;
+      }
+    } catch {
+      // Ignore
+    }
+    return {
+      gameMode: 'PVP',
+      aiSide: 'TIGER',
+      aiDifficulty: 'EASY',
+      soundEnabled: true,
+      hapticsEnabled: true,
+      showCoordinates: false,
+      developerMode: false,
+      visualStyle: savedStyle,
+    };
   });
 
   const [isAiThinking, setIsAiThinking] = useState(false);
@@ -64,12 +76,28 @@ export default function App() {
     sceneManagerRef.current = manager;
     manager.syncWithState(gameState);
     manager.setDebugCoordinates(settings.showCoordinates);
+    manager.setVisualStyle(settings.visualStyle);
 
     return () => {
       manager.destroy();
       sceneManagerRef.current = null;
     };
   }, [view]);
+
+  const handleUpdateSettings = (newSettings: Partial<GameSettings>) => {
+    setSettings((prev) => {
+      const updated = { ...prev, ...newSettings };
+      if (newSettings.visualStyle) {
+        try {
+          localStorage.setItem('khla_si_ko_style', newSettings.visualStyle);
+        } catch {
+          // Ignore
+        }
+        sceneManagerRef.current?.setVisualStyle(newSettings.visualStyle);
+      }
+      return updated;
+    });
+  };
 
   // Handle Board / Piece Interaction
   const handleInteraction = useCallback(
@@ -311,7 +339,7 @@ export default function App() {
           onOpenTutorial={() => setShowTutorial(true)}
           onOpenRules={() => setShowRules(true)}
           settings={settings}
-          onUpdateSettings={(newSettings) => setSettings((s) => ({ ...s, ...newSettings }))}
+          onUpdateSettings={handleUpdateSettings}
         />
       )}
 
@@ -372,6 +400,8 @@ export default function App() {
             onToggleMute={handleToggleSound}
             haptics={settings.hapticsEnabled}
             onToggleHaptics={handleToggleHaptics}
+            visualStyle={settings.visualStyle}
+            onChangeVisualStyle={(style) => handleUpdateSettings({ visualStyle: style })}
           />
 
           {/* Victory Celebration Modal */}

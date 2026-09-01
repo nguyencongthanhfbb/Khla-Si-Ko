@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { Tiger3D } from './Tiger3D';
 import { Cow3D } from './Cow3D';
 import { getCellPosition, BOARD_BASE_Y } from './Board3D';
-import { PieceType } from '../game/types';
+import { PieceType, VisualStyle } from '../game/types';
 
 export type PieceAnimState = 'IDLE' | 'PLACING' | 'MOVING' | 'CAPTURING' | 'CAPTURED_DYING';
 
@@ -46,6 +46,11 @@ export class GamePiece3D {
     }
 
     this.group.userData = { pieceId: id, type };
+  }
+
+  public setVisualStyle(style: VisualStyle) {
+    this.tigerModel?.setVisualStyle(style);
+    this.cowModel?.setVisualStyle(style);
   }
 
   public setCellInstant(cellIndex: number | null) {

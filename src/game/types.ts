@@ -50,4 +50,7 @@ export interface GameSettings {
   hapticsEnabled: boolean;
   showCoordinates: boolean;
   developerMode: boolean;
+  visualStyle: VisualStyle;
 }
+
+export type VisualStyle = 'CUBE_PETS' | 'SOFT_CHIBI' | 'KHMER_WOODEN';

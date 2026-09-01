@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { assetManager } from './AssetManager';
 import { CharacterAnimator, CharacterAction } from './CharacterAnimator';
+import { VisualStyle } from '../game/types';
 
 export type CowExpression = 'idle' | 'selected' | 'placed' | 'surprised' | 'victory';
 
@@ -15,8 +16,11 @@ export class CowAssetAdapter {
   public animator: CharacterAnimator | null = null;
   public isLoaded: boolean = false;
   private currentExpression: CowExpression = 'idle';
+  private visualStyle: VisualStyle = 'CUBE_PETS';
+  private variationIndex: number = 0;
 
   constructor(variationIndex: number = 0) {
+    this.variationIndex = variationIndex;
     this.group = new THREE.Group();
     this.group.name = `Cow_Adapter_${variationIndex}`;
 
@@ -36,8 +40,8 @@ export class CowAssetAdapter {
   }
 
   private async loadRealAsset(variationIndex: number) {
-    const primaryPath = '/assets/game/characters/cow/cow.glb';
-    const fallbackPath = '/assets/vendor/quaternius/cow.glb';
+    const primaryPath = '/assets/vendor/quaternius/cow.glb';
+    const fallbackPath = '/assets/game/characters/cow/cow.glb';
 
     try {
       let model = await assetManager.getModel(primaryPath);
@@ -68,10 +72,40 @@ export class CowAssetAdapter {
         this.modelContainer.add(model);
         this.animator = new CharacterAnimator(model);
         this.isLoaded = true;
+        this.applyStyleMaterials();
       }
     } catch (err) {
       console.warn('[CowAssetAdapter] Loading error:', err);
     }
+  }
+
+  public setVisualStyle(style: VisualStyle) {
+    this.visualStyle = style;
+    this.applyStyleMaterials();
+  }
+
+  private applyStyleMaterials() {
+    if (!this.isLoaded) return;
+
+    this.modelContainer.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
+        if (mesh.material && !Array.isArray(mesh.material)) {
+          const mat = mesh.material as THREE.MeshStandardMaterial;
+          if (this.visualStyle === 'CUBE_PETS') {
+            mat.roughness = 0.45;
+            mat.metalness = 0.04;
+          } else if (this.visualStyle === 'SOFT_CHIBI') {
+            mat.roughness = 0.75;
+            mat.metalness = 0.01;
+          } else if (this.visualStyle === 'KHMER_WOODEN') {
+            mat.roughness = 0.38;
+            mat.metalness = 0.08;
+          }
+          mat.needsUpdate = true;
+        }
+      }
+    });
   }
 
   public setExpression(expr: CowExpression) {

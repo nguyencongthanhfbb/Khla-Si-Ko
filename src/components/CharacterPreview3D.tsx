@@ -7,7 +7,7 @@ import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { Tiger3D } from '../3d/Tiger3D';
 import { Cow3D } from '../3d/Cow3D';
-import { KbachBorderStrip3D } from '../3d/KhmerDecor3D';
+import { KbachBorderStrip3D, KhmerStiltHouse3D } from '../3d/KhmerDecor3D';
 import { assetManager } from '../3d/AssetManager';
 
 interface CharacterPreview3DProps {
@@ -98,14 +98,11 @@ export const CharacterPreview3D: React.FC<CharacterPreview3DProps> = ({
       camera.lookAt(0, 0.25, 0);
 
       // Background Miniature Khmer Stilt House
-      assetManager.getModel('/assets/game/khmer/khmer_stilt_house.glb').then((house) => {
-        if (house) {
-          house.position.set(0, -0.1, -2.8);
-          house.scale.set(0.42, 0.42, 0.42);
-          house.rotation.y = 0.1;
-          rootGroup.add(house);
-        }
-      });
+      const house = new KhmerStiltHouse3D();
+      house.position.set(0, -0.1, -2.8);
+      house.scale.set(0.48, 0.48, 0.48);
+      house.rotation.y = 0.08;
+      rootGroup.add(house);
 
       // Miniature handcrafted wooden board
       const miniBoardMat = new THREE.MeshStandardMaterial({

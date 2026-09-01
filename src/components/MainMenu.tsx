@@ -18,10 +18,11 @@ import {
   ArrowLeft,
   Eye,
 } from 'lucide-react';
-import { GameSettings, Side } from '../game/types';
+import { GameSettings, Side, VisualStyle } from '../game/types';
 import { sound } from '../audio/SoundEffects';
 import { CharacterPreview3D } from './CharacterPreview3D';
 import { KbachPattern, KhmerCornerMotif } from './khmer';
+import { Palette, Sparkles, Box, TreePine } from 'lucide-react';
 
 interface MainMenuProps {
   onStartGame: (mode: 'PVP' | 'AI', aiSide?: Side, aiDiff?: 'EASY' | 'MEDIUM') => void;
@@ -351,7 +352,91 @@ export const MainMenu: React.FC<MainMenuProps> = ({
               </button>
             </div>
 
-            <div className="py-4 space-y-3.5">
+            <div className="py-4 space-y-3.5 max-h-[68vh] overflow-y-auto pr-1">
+              {/* 3D Visual Style Selector */}
+              <div className="p-3.5 rounded-2xl bg-[#faf4ea] border border-[#d8c29d] space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Palette className="w-4 h-4 text-[#8a532f]" />
+                    <span className="font-bold text-sm text-stone-800">Visual Style (3D)</span>
+                  </div>
+                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-[#8a532f] text-white rounded-full">
+                    {settings.visualStyle === 'CUBE_PETS'
+                      ? 'Cube Pets (Default)'
+                      : settings.visualStyle === 'SOFT_CHIBI'
+                      ? 'Soft Chibi'
+                      : 'Khmer Wooden Toy'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {/* Style 1: Cube Pets (Default) */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sound.playClick();
+                      onUpdateSettings({ visualStyle: 'CUBE_PETS' });
+                    }}
+                    className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 ${
+                      settings.visualStyle === 'CUBE_PETS'
+                        ? 'bg-[#8a532f] text-white border-[#422415] shadow-md ring-2 ring-[#8a532f]/30'
+                        : 'bg-white text-stone-700 border-stone-200 hover:border-amber-300'
+                    }`}
+                  >
+                    <Box className="w-4 h-4" />
+                    <div className="font-extrabold text-[11px] leading-tight">Cube Pets</div>
+                    <div className={`text-[9px] ${settings.visualStyle === 'CUBE_PETS' ? 'text-amber-200' : 'text-stone-400'}`}>
+                      Default
+                    </div>
+                  </button>
+
+                  {/* Style 2: Soft Chibi */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sound.playClick();
+                      onUpdateSettings({ visualStyle: 'SOFT_CHIBI' });
+                    }}
+                    className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 ${
+                      settings.visualStyle === 'SOFT_CHIBI'
+                        ? 'bg-[#8a532f] text-white border-[#422415] shadow-md ring-2 ring-[#8a532f]/30'
+                        : 'bg-white text-stone-700 border-stone-200 hover:border-amber-300'
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <div className="font-extrabold text-[11px] leading-tight">Soft Chibi</div>
+                    <div className={`text-[9px] ${settings.visualStyle === 'SOFT_CHIBI' ? 'text-amber-200' : 'text-stone-400'}`}>
+                      Pastel
+                    </div>
+                  </button>
+
+                  {/* Style 3: Khmer Wooden Toy */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sound.playClick();
+                      onUpdateSettings({ visualStyle: 'KHMER_WOODEN' });
+                    }}
+                    className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 ${
+                      settings.visualStyle === 'KHMER_WOODEN'
+                        ? 'bg-[#8a532f] text-white border-[#422415] shadow-md ring-2 ring-[#8a532f]/30'
+                        : 'bg-white text-stone-700 border-stone-200 hover:border-amber-300'
+                    }`}
+                  >
+                    <TreePine className="w-4 h-4" />
+                    <div className="font-extrabold text-[11px] leading-tight">Khmer Toy</div>
+                    <div className={`text-[9px] ${settings.visualStyle === 'KHMER_WOODEN' ? 'text-amber-200' : 'text-stone-400'}`}>
+                      Handcrafted
+                    </div>
+                  </button>
+                </div>
+                <div className="text-[10px] text-stone-500 italic text-center">
+                  {settings.visualStyle === 'CUBE_PETS' && 'Chunky toy-like animals + Mini Forest + Khmer wooden board.'}
+                  {settings.visualStyle === 'SOFT_CHIBI' && 'Soft velvety pastel tones + gentle studio lighting.'}
+                  {settings.visualStyle === 'KHMER_WOODEN' && 'Polished dark rosewood lacquer + warm amber courtyard.'}
+                </div>
+              </div>
+
               {/* Sound Audio Toggle */}
               <div className="flex items-center justify-between p-3 rounded-2xl bg-[#faf4ea] border border-[#d8c29d]">
                 <div className="flex items-center gap-2.5">

@@ -5,6 +5,7 @@
 
 import * as THREE from 'three';
 import { CowAssetAdapter, CowExpression } from './CowAssetAdapter';
+import { VisualStyle } from '../game/types';
 
 export type { CowExpression };
 
@@ -15,6 +16,10 @@ export class Cow3D {
   constructor(variationIndex: number = 0) {
     this.adapter = new CowAssetAdapter(variationIndex);
     this.group = this.adapter.group;
+  }
+
+  public setVisualStyle(style: VisualStyle) {
+    this.adapter.setVisualStyle(style);
   }
 
   public setExpression(expr: CowExpression) {

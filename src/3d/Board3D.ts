@@ -4,19 +4,36 @@
  */
 
 import * as THREE from 'three';
-import { BoardCoordinate } from '../game/types';
+import { BoardCoordinate, VisualStyle } from '../game/types';
 import { KhmerBoardCorner3D, KbachBorderStrip3D } from './KhmerDecor3D';
 
 export const BOARD_BASE_Y = 0.18;
 
-const PALETTE = {
-  woodDark: 0x3d2214, // Handcrafted dark teak base
-  woodMedium: 0x613a20, // Carved wooden border
-  woodTeak: 0x8a532f, // Frame trim
-  woodLight: 0xb58252, // Soft grid grooves
-  tileCream: 0xf6ede0, // Inset light wooden tile
-  tileCreamAlt: 0xeee3d3, // Subtle alternating tile tone
-  khmerGold: 0xd4af37, // Restrained gold accent
+const PALETTES = {
+  CUBE_PETS: {
+    woodDark: 0x3d2214, // Handcrafted dark teak base
+    woodMedium: 0x613a20, // Carved wooden border
+    tileCream: 0xf6ede0, // Inset light wooden tile
+    tileCreamAlt: 0xeee3d3, // Subtle alternating tile tone
+    roughness: 0.5,
+    metalness: 0.02,
+  },
+  SOFT_CHIBI: {
+    woodDark: 0x4a2e22, // Soft warm chestnut base
+    woodMedium: 0x7c4d32, // Soft honey wood border
+    tileCream: 0xfbf6ee, // Pastel creamy almond tile
+    tileCreamAlt: 0xf3ebe0, // Pastel warm biscuit
+    roughness: 0.72,
+    metalness: 0.01,
+  },
+  KHMER_WOODEN: {
+    woodDark: 0x2e180e, // Deep antique aged rosewood base
+    woodMedium: 0x542b16, // Burnished teak border
+    tileCream: 0xfaeedd, // Antique warm ivory tile
+    tileCreamAlt: 0xefdec6, // Aged rattan tone
+    roughness: 0.38,
+    metalness: 0.06,
+  },
 };
 
 const GRID_OFFSET = 1.5; // (4 - 1) / 2
@@ -59,6 +76,11 @@ export class Board3D {
   private tileSize: number = TILE_SIZE;
   private tileGap: number = 0.08;
 
+  private baseMat!: THREE.MeshStandardMaterial;
+  private frameMat!: THREE.MeshStandardMaterial;
+  private tileMats: THREE.MeshStandardMaterial[] = [];
+  private currentStyle: VisualStyle = 'CUBE_PETS';
+
   constructor() {
     this.group = new THREE.Group();
     this.group.name = 'Khmer_Handcrafted_Board';
@@ -67,28 +89,30 @@ export class Board3D {
   }
 
   private buildBoard() {
+    const palette = PALETTES[this.currentStyle];
+
     // 1. Lower Solid Wooden Foundation Tier (Handcrafted dark teak)
     const baseGeo = new THREE.BoxGeometry(5.4, 0.32, 5.4);
-    const baseMat = new THREE.MeshStandardMaterial({
-      color: PALETTE.woodDark,
-      roughness: 0.72,
-      metalness: 0.03,
+    this.baseMat = new THREE.MeshStandardMaterial({
+      color: palette.woodDark,
+      roughness: palette.roughness + 0.2,
+      metalness: palette.metalness,
       flatShading: true,
     });
-    const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+    const baseMesh = new THREE.Mesh(baseGeo, this.baseMat);
     baseMesh.position.y = -0.16;
     baseMesh.receiveShadow = true;
     this.group.add(baseMesh);
 
     // 2. Upper Beveled Wooden Frame Tier
     const frameGeo = new THREE.BoxGeometry(4.8, 0.16, 4.8);
-    const frameMat = new THREE.MeshStandardMaterial({
-      color: PALETTE.woodMedium,
-      roughness: 0.65,
-      metalness: 0.04,
+    this.frameMat = new THREE.MeshStandardMaterial({
+      color: palette.woodMedium,
+      roughness: palette.roughness + 0.1,
+      metalness: palette.metalness,
       flatShading: true,
     });
-    const frameMesh = new THREE.Mesh(frameGeo, frameMat);
+    const frameMesh = new THREE.Mesh(frameGeo, this.frameMat);
     frameMesh.position.y = 0.06;
     frameMesh.receiveShadow = true;
     this.group.add(frameMesh);
@@ -143,11 +167,12 @@ export class Board3D {
 
         const isAlt = (r + c) % 2 === 1;
         const tileMat = new THREE.MeshStandardMaterial({
-          color: isAlt ? PALETTE.tileCreamAlt : PALETTE.tileCream,
-          roughness: 0.5,
-          metalness: 0.02,
+          color: isAlt ? palette.tileCreamAlt : palette.tileCream,
+          roughness: palette.roughness,
+          metalness: palette.metalness,
           flatShading: true,
         });
+        this.tileMats.push(tileMat);
 
         const tileGeo = new THREE.BoxGeometry(effectiveTileWidth, 0.06, effectiveTileWidth);
         const tileMesh = new THREE.Mesh(tileGeo, tileMat);
@@ -163,7 +188,7 @@ export class Board3D {
 
     // 6. Subtle Inset Wooden Grid Groove Borders
     const grooveMat = new THREE.MeshStandardMaterial({
-      color: PALETTE.woodDark,
+      color: palette.woodDark,
       roughness: 0.8,
     });
 
@@ -178,6 +203,35 @@ export class Board3D {
 
       this.group.add(hGroove, vGroove);
     }
+  }
+
+  public setVisualStyle(style: VisualStyle) {
+    this.currentStyle = style;
+    const palette = PALETTES[style];
+
+    if (this.baseMat) {
+      this.baseMat.color.setHex(palette.woodDark);
+      this.baseMat.roughness = palette.roughness + 0.2;
+      this.baseMat.metalness = palette.metalness;
+      this.baseMat.needsUpdate = true;
+    }
+
+    if (this.frameMat) {
+      this.frameMat.color.setHex(palette.woodMedium);
+      this.frameMat.roughness = palette.roughness + 0.1;
+      this.frameMat.metalness = palette.metalness;
+      this.frameMat.needsUpdate = true;
+    }
+
+    this.tileMats.forEach((mat, idx) => {
+      const r = Math.floor(idx / 4);
+      const c = idx % 4;
+      const isAlt = (r + c) % 2 === 1;
+      mat.color.setHex(isAlt ? palette.tileCreamAlt : palette.tileCream);
+      mat.roughness = palette.roughness;
+      mat.metalness = palette.metalness;
+      mat.needsUpdate = true;
+    });
   }
 
   private buildDebugCoordinates() {

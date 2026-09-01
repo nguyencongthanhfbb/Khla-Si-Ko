@@ -104,22 +104,19 @@ export class AssetManager {
    */
   public async preloadAll(): Promise<void> {
     const urls = [
-      '/assets/game/characters/cow/cow.glb',
-      '/assets/game/characters/tiger/tiger.glb',
-      '/assets/game/environment/tree_oak.glb',
-      '/assets/game/environment/tree_default.glb',
-      '/assets/game/environment/rock_largeA.glb',
-      '/assets/game/environment/rock_smallA.glb',
-      '/assets/game/environment/plant_bush.glb',
-      '/assets/game/environment/flower_redA.glb',
-      '/assets/game/environment/flower_yellowA.glb',
-      '/assets/game/environment/grass.glb',
-      '/assets/game/environment/fence_simple.glb',
-      '/assets/game/khmer/khmer_stilt_house.glb',
-      '/assets/game/khmer/clay_jar_kam.glb',
       '/assets/vendor/quaternius/cow.glb',
+      '/assets/game/characters/tiger/tiger.glb',
       '/assets/vendor/kenney/mini-forest/tree_oak.glb',
-      '/assets/vendor/kenney/nature/tree.glb',
+      '/assets/vendor/kenney/mini-forest/tree_default.glb',
+      '/assets/vendor/kenney/mini-forest/fence_simple.glb',
+      '/assets/vendor/kenney/mini-forest/rock_largeA.glb',
+      '/assets/vendor/kenney/mini-forest/rock_smallA.glb',
+      '/assets/vendor/kenney/mini-forest/plant_bush.glb',
+      '/assets/vendor/kenney/mini-forest/flower_redA.glb',
+      '/assets/vendor/kenney/mini-forest/flower_yellowA.glb',
+      '/assets/vendor/kenney/mini-forest/grass.glb',
+      '/assets/game/khmer/clay_jar_kam.glb',
+      '/assets/khmer/architecture/clay_jar_kam.glb',
     ];
 
     await Promise.allSettled(urls.map((u) => this.loadModel(u)));
